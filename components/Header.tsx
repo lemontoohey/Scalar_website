@@ -41,11 +41,11 @@ export default function Header() {
               style={{ 
                 backgroundColor: 'transparent', 
                 display: 'block',
-                width: '80px',
-                height: '80px',
-                minWidth: '80px',
-                minHeight: '80px',
-                filter: 'drop-shadow(0 0 15px rgba(168, 0, 0, 0.6))'
+                width: '56px',
+                height: '56px',
+                minWidth: '56px',
+                minHeight: '56px',
+                filter: 'drop-shadow(0 0 10px rgba(168, 0, 0, 0.5))'
               } as React.CSSProperties}
               onError={(e) => {
                 console.error('Logo failed to load:', e);
