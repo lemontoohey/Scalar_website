@@ -35,7 +35,7 @@ export default function Header() {
           >
             <div className="absolute inset-0 bg-scalar-red/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
             <img
-              src={`/logo.png?t=${Date.now()}`}
+              src="/logo.png"
               alt="Scalar Materials Logo"
               className="object-contain relative z-50"
               style={{ 
