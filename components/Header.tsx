@@ -45,9 +45,8 @@ export default function Header() {
                 height: '300px',
                 minWidth: '300px',
                 minHeight: '300px',
-                filter: 'drop-shadow(0 0 40px rgba(168, 0, 0, 1))',
-                imageRendering: 'high-quality'
-              }}
+                filter: 'drop-shadow(0 0 40px rgba(168, 0, 0, 1))'
+              } as React.CSSProperties}
               onError={(e) => {
                 console.error('Logo failed to load:', e);
                 (e.target as HTMLImageElement).style.border = '2px solid red';
