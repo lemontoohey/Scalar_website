@@ -6,11 +6,14 @@
   body {
     @apply bg-scalar-black-dark text-white font-sans antialiased;
   }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-extrabold tracking-wide;
+  h1, h2 {
+    @apply font-heading font-black tracking-tight uppercase;
+  }
+  h3, h4 {
+    @apply font-heading font-semibold tracking-normal;
   }
   p, li {
-    @apply font-light leading-relaxed;
+    @apply font-normal leading-relaxed;
   }
 }
 

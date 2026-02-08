@@ -42,10 +42,10 @@ export default function Collection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-extrabold tracking-wide uppercase mb-4">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight uppercase mb-4">
             THE COLLECTION
           </h2>
-          <p className="text-lg font-light text-white/60 leading-relaxed">
+          <p className="text-lg font-normal text-white/60 leading-relaxed">
             Periodic Table of Performance
           </p>
         </motion.div>
@@ -60,8 +60,8 @@ export default function Collection() {
             >
               <GlassCard className="h-full">
                 <div className="space-y-6">
-                  <h3 className="text-2xl font-extrabold tracking-wide uppercase border-b border-white/10 pb-3">
-                    {collection.category.toUpperCase()}
+                  <h3 className="text-2xl font-semibold tracking-normal border-b border-white/10 pb-3">
+                    {collection.category}
                   </h3>
                   <div className="space-y-4">
                     {collection.products.map((product, productIndex) => (
@@ -76,12 +76,12 @@ export default function Collection() {
                         }}
                       >
                         <div className="flex-shrink-0 w-16 h-16 glass-effect rounded-sm flex items-center justify-center">
-                          <span className="text-lg font-extrabold tracking-wide text-scalar-red uppercase">
+                          <span className="text-lg font-narrow tracking-wider text-scalar-red uppercase">
                             {product.symbol}
                           </span>
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-sm font-light text-white/90 mb-1 leading-relaxed">
+                          <h4 className="text-sm font-normal text-white/90 mb-1 leading-relaxed">
                             {product.name}
                           </h4>
                         </div>

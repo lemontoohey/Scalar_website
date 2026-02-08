@@ -1,11 +1,18 @@
 import type { Metadata } from 'next'
-import { Sora } from 'next/font/google'
+import { Archivo, Archivo_Narrow } from 'next/font/google'
 import './globals.css'
 
-const sora = Sora({
+const archivo = Archivo({
   subsets: ['latin'],
-  weight: ['300', '400', '600', '800'],
-  variable: '--font-sora',
+  weight: ['400', '600', '900'],
+  variable: '--font-archivo',
+  display: 'swap',
+})
+
+const archivoNarrow = Archivo_Narrow({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-archivo-narrow',
   display: 'swap',
 })
 
@@ -21,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${sora.variable}`}>
+      <body className={`${archivo.variable} ${archivoNarrow.variable}`}>
         {children}
       </body>
     </html>

@@ -58,25 +58,25 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-8">
           <Link
             href="#vision"
-            className="text-sm font-light tracking-wide hover:text-scalar-red transition-colors uppercase"
+            className="text-sm font-normal tracking-normal hover:text-scalar-red transition-colors uppercase"
           >
             Vision
           </Link>
           <Link
             href="#technology"
-            className="text-sm font-light tracking-wide hover:text-scalar-red transition-colors uppercase"
+            className="text-sm font-normal tracking-normal hover:text-scalar-red transition-colors uppercase"
           >
             Technology
           </Link>
           <Link
             href="#collection"
-            className="text-sm font-light tracking-wide hover:text-scalar-red transition-colors uppercase"
+            className="text-sm font-normal tracking-normal hover:text-scalar-red transition-colors uppercase"
           >
             The Collection
           </Link>
           <Link
             href="#team"
-            className="text-sm font-light tracking-wide hover:text-scalar-red transition-colors uppercase"
+            className="text-sm font-normal tracking-normal hover:text-scalar-red transition-colors uppercase"
           >
             Team
           </Link>

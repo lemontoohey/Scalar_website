@@ -43,11 +43,11 @@ export default function Technology() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-extrabold tracking-wide uppercase mb-4">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tight uppercase mb-4">
             THE TECHNOLOGY
           </h2>
-          <h3 className="text-3xl md:text-4xl font-extrabold tracking-wide text-scalar-red mb-4">
-            THE MASTER SOUP (SC-01 GLASS BASE)
+          <h3 className="text-3xl md:text-4xl font-semibold tracking-normal text-scalar-red mb-4">
+            The Master Soup (SC-01 Glass Base)
           </h3>
         </motion.div>
 
@@ -63,14 +63,14 @@ export default function Technology() {
             >
               <GlassCard className="h-full">
                 <div className="space-y-4">
-                  <div className="text-xs font-light tracking-wide text-white/40 uppercase">
+                  <div className="text-xs font-narrow tracking-wider text-white/40 uppercase">
                     {stage.title}
                   </div>
-                  <h4 className="text-xl font-extrabold tracking-wide text-scalar-red">
+                  <h4 className="text-xl font-semibold tracking-normal text-scalar-red">
                     {stage.subtitle}
                   </h4>
                   <motion.p
-                    className="text-sm font-light text-white/60 leading-relaxed"
+                    className="text-sm font-normal text-white/60 leading-relaxed"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{
                       opacity: hoveredIndex === index ? 1 : 0,
