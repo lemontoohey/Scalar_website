@@ -51,8 +51,9 @@ export default function Hero() {
                     mixBlendMode: 'screen',
                   }}
                   onError={(e) => {
+                    const target = e.target as HTMLImageElement
                     console.error('Fallback logo failed to load')
-                    (e.target as HTMLImageElement).style.display = 'none'
+                    target.style.display = 'none'
                   }}
                 />
               </div>
