@@ -20,8 +20,8 @@ export default function BottomNav({ visible }: { visible: boolean }) {
       transition={{ duration: 1, delay: 2, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="container mx-auto px-6 pb-8">
-        <div className="border-t border-white/20 h-px mb-6" />
-        <div className="flex items-center justify-center gap-8 flex-wrap">
+        <div className="border-t border-white/10 h-px mb-6" />
+        <div className="flex items-center justify-center gap-6 flex-wrap">
           {navItems.map((item, index) => (
             <motion.div
               key={item.href}
@@ -35,12 +35,13 @@ export default function BottomNav({ visible }: { visible: boolean }) {
             >
               <Link
                 href={item.href}
-                className="text-xs font-light tracking-[0.1em] lowercase text-white/60 hover:text-white transition-colors"
+                className="text-xs font-light tracking-[0.2em] lowercase text-white/60 hover:text-white transition-colors"
                 style={{
                   fontFamily: 'var(--font-archivo)',
                   fontWeight: 300
                 }}
               >
+                {index > 0 && <span className="mx-2 text-white/20">|</span>}
                 {item.label}
               </Link>
             </motion.div>

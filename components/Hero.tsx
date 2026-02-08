@@ -4,49 +4,79 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import OpticalEngine from './OpticalEngine'
 import BottomNav from './BottomNav'
+import DiagnosticMetadata from './DiagnosticMetadata'
+import CustomCursor from './CustomCursor'
 
 export default function Hero() {
   const [cureComplete, setCureComplete] = useState(false)
 
   return (
-    <OpticalEngine onCureComplete={() => setCureComplete(true)}>
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="relative z-10 container mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: cureComplete ? 1 : 0 }}
-            transition={{ duration: 1, delay: 2, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-4"
+    <>
+      <CustomCursor />
+      <OpticalEngine onCureComplete={() => setCureComplete(true)}>
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+          {/* Hero Stack with Engineered Asymmetry: -5% X, -3% Y from center */}
+          <div 
+            className="relative z-10 text-center"
+            style={{
+              transform: 'translate(calc(-50% - 5vw), calc(-50% - 3vh))',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+            }}
           >
-            <h1 
-              className="text-7xl md:text-9xl font-light tracking-[0.4em] mix-blend-screen"
-              style={{ 
-                fontFamily: 'var(--font-archivo)',
-                fontWeight: 300,
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-              }}
-            >
-              Scalar
-            </h1>
-            <motion.p
-              className="text-lg md:text-xl font-light tracking-[0.6em] lowercase mix-blend-screen"
-              style={{ 
-                fontFamily: 'var(--font-archivo)',
-                fontWeight: 300,
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-              }}
+            {/* Scalar text - Logo offset +3% X relative to this */}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: cureComplete ? 1 : 0 }}
-              transition={{ duration: 1, delay: 2.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 1, delay: 2, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-4"
             >
-              ordinance of depth
-            </motion.p>
-          </motion.div>
-        </div>
-      </section>
-      <BottomNav visible={cureComplete} />
-    </OpticalEngine>
+              {/* Logo positioned +3% X from text center */}
+              <div
+                className="relative mb-8"
+                style={{
+                  transform: 'translateX(3%)',
+                  display: 'inline-block',
+                }}
+              >
+                {/* Logo is rendered in the shader, this is a placeholder for positioning */}
+                <div className="w-[35vh] h-[35vh] opacity-0 pointer-events-none" />
+              </div>
+
+              <h1 
+                className="text-7xl md:text-9xl font-light tracking-[0.4em] mix-blend-screen"
+                style={{ 
+                  fontFamily: 'var(--font-archivo)',
+                  fontWeight: 300,
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  filter: 'drop-shadow(0 0 20px rgba(168, 0, 0, 0.3))',
+                  textShadow: '0 0 40px rgba(168, 0, 0, 0.2)',
+                }}
+              >
+                Scalar
+              </h1>
+              <motion.p
+                className="text-lg md:text-xl font-light tracking-[0.6em] lowercase mix-blend-screen"
+                style={{ 
+                  fontFamily: 'var(--font-archivo)',
+                  fontWeight: 300,
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: cureComplete ? 1 : 0 }}
+                transition={{ duration: 1, delay: 2.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                ordinance of depth
+              </motion.p>
+            </motion.div>
+          </div>
+        </section>
+        <DiagnosticMetadata visible={cureComplete} />
+        <BottomNav visible={cureComplete} />
+      </OpticalEngine>
+    </>
   )
 }

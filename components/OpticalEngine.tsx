@@ -13,8 +13,8 @@ const Canvas = dynamic(
   }
 )
 
-const LogoCureShader = dynamic(
-  () => import('./LogoCureShader'),
+const FluidCureShader = dynamic(
+  () => import('./FluidCureShader'),
   { 
     ssr: false,
     loading: () => null
@@ -102,7 +102,7 @@ export default function OpticalEngine({
                 setUseShader(false)
               }}
             >
-              <LogoCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
+              <FluidCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
             </Canvas>
           </Suspense>
         ) : (

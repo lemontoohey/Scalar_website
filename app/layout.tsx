@@ -30,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${archivo.variable} ${archivoNarrow.variable}`}>
+      <body className={`${archivo.variable} ${archivoNarrow.variable} bg-black text-white`}>
         <ClientErrorBoundary>
           <SmoothScroll>
             {children}
