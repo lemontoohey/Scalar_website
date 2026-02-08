@@ -20,7 +20,7 @@ export default function BottomNav({ visible }: { visible: boolean }) {
       transition={{ duration: 1, delay: 2, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="container mx-auto px-6 pb-8">
-        <div className="border-t border-white/10 h-px mb-6" />
+        <div className="border-t border-white/10 h-px mb-6" style={{ opacity: 0.1 }} />
         <div className="flex items-center justify-center gap-6 flex-wrap">
           {navItems.map((item, index) => (
             <motion.div

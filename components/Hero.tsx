@@ -5,24 +5,25 @@ import { useState } from 'react'
 import OpticalEngine from './OpticalEngine'
 import BottomNav from './BottomNav'
 import DiagnosticMetadata from './DiagnosticMetadata'
-import CustomCursor from './CustomCursor'
+import EnsoEchoCursor from './EnsoEchoCursor'
 
 export default function Hero() {
   const [cureComplete, setCureComplete] = useState(false)
 
   return (
     <>
-      <CustomCursor />
+      <EnsoEchoCursor />
       <OpticalEngine onCureComplete={() => setCureComplete(true)}>
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
           {/* Hero Stack with Engineered Asymmetry: -5% X, -3% Y from center */}
           <div 
-            className="relative z-10 text-center"
+            className="relative text-center"
             style={{
               transform: 'translate(calc(-50% - 5vw), calc(-50% - 3vh))',
               position: 'absolute',
               top: '50%',
               left: '50%',
+              zIndex: 50,
             }}
           >
             {/* Scalar text - Logo offset +3% X relative to this */}

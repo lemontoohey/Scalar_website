@@ -2,7 +2,6 @@
 
 import { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 
 const vertexShader = `
@@ -177,14 +176,32 @@ export default function FluidCureShader({
   const { viewport, size } = useThree()
   const [cure, setCure] = useState(0)
   const [cureStarted, setCureStarted] = useState(false)
+  const [logoTexture, setLogoTexture] = useState<THREE.Texture | null>(null)
+  const [textureError, setTextureError] = useState<string | null>(null)
   
-  const logoTexture = useTexture(logoPath, (texture) => {
-    texture.flipY = false
-    texture.wrapS = THREE.ClampToEdgeWrapping
-    texture.wrapT = THREE.ClampToEdgeWrapping
-    texture.minFilter = THREE.LinearFilter
-    texture.magFilter = THREE.LinearFilter
-  })
+  // Load texture with TextureLoader and error handling
+  useEffect(() => {
+    const loader = new THREE.TextureLoader()
+    
+    loader.load(
+      logoPath,
+      (texture) => {
+        texture.flipY = false
+        texture.wrapS = THREE.ClampToEdgeWrapping
+        texture.wrapT = THREE.ClampToEdgeWrapping
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        setLogoTexture(texture)
+        console.log('Logo texture loaded successfully:', logoPath)
+      },
+      undefined,
+      (error) => {
+        const errorMsg = `Failed to load logo texture from ${logoPath}: ${error}`
+        console.error(errorMsg)
+        setTextureError(errorMsg)
+      }
+    )
+  }, [logoPath])
   
   const uniforms = useMemo(
     () => {
@@ -204,8 +221,9 @@ export default function FluidCureShader({
   
   // Start cure sequence when texture is loaded
   useEffect(() => {
-    if (logoTexture && uniforms && !cureStarted) {
+    if (logoTexture && uniforms && !cureStarted && !textureError) {
       setCureStarted(true)
+      console.log('Starting 5-second cure sequence')
       
       setTimeout(() => {
         const startTime = Date.now()
@@ -222,6 +240,7 @@ export default function FluidCureShader({
           if (progress < 1) {
             requestAnimationFrame(animate)
           } else {
+            console.log('Cure sequence complete')
             onCureComplete?.()
           }
         }
@@ -229,7 +248,14 @@ export default function FluidCureShader({
         requestAnimationFrame(animate)
       }, 100)
     }
-  }, [logoTexture, uniforms, cureStarted, onCureComplete])
+  }, [logoTexture, uniforms, cureStarted, onCureComplete, textureError])
+  
+  // Log error if texture failed
+  useEffect(() => {
+    if (textureError) {
+      console.error('Texture loading error:', textureError)
+    }
+  }, [textureError])
 
   useFrame((state) => {
     if (meshRef.current && uniforms) {
@@ -242,7 +268,10 @@ export default function FluidCureShader({
     }
   })
 
-  if (!uniforms) {
+  if (!uniforms || textureError) {
+    if (textureError) {
+      console.error('Shader not rendering due to texture error:', textureError)
+    }
     return null
   }
 

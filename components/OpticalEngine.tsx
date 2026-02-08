@@ -23,7 +23,7 @@ const FluidCureShader = dynamic(
 
 function FallbackBackground() {
   return (
-    <div className="absolute inset-0 overflow-hidden bg-black">
+    <div className="absolute inset-0 overflow-hidden" style={{ backgroundColor: '#000502' }}>
       <div 
         className="absolute inset-0 flex items-center justify-center"
         style={{
@@ -85,7 +85,7 @@ export default function OpticalEngine({
   }, [])
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
+    <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
       <ErrorBoundary fallback={<FallbackBackground />}>
         {mounted && useShader ? (
           <Suspense fallback={<FallbackBackground />}>

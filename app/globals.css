@@ -4,7 +4,8 @@
 
 @layer base {
   body {
-    @apply bg-black text-white font-sans antialiased;
+    @apply text-white font-sans antialiased;
+    background-color: #000502;
   }
   h1, h2 {
     @apply font-heading font-black tracking-tight uppercase;
