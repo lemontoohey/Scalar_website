@@ -91,6 +91,7 @@ export default function OpticalEngine({
           <Suspense fallback={<FallbackBackground />}>
             <Canvas
               className="absolute inset-0"
+              style={{ zIndex: 1 }}
               gl={{ 
                 alpha: true, 
                 antialias: true,
@@ -110,8 +111,10 @@ export default function OpticalEngine({
         )}
       </ErrorBoundary>
       
-      <div className="relative z-10">
-        {children}
+      <div className="relative" style={{ zIndex: 50, pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'auto' }}>
+          {children}
+        </div>
       </div>
     </div>
   )

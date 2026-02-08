@@ -16,8 +16,8 @@ export default function BottomNav({ visible }: { visible: boolean }) {
     <motion.nav
       className="fixed bottom-0 left-0 right-0 z-50"
       initial={{ opacity: 0 }}
-      animate={{ opacity: visible ? 1 : 0 }}
-      transition={{ duration: 1, delay: 2, ease: [0.16, 1, 0.3, 1] }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1, delay: 1, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="container mx-auto px-6 pb-8">
         <div className="border-t border-white/10 h-px mb-6" style={{ opacity: 0.1 }} />
@@ -26,10 +26,10 @@ export default function BottomNav({ visible }: { visible: boolean }) {
             <motion.div
               key={item.href}
               initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ 
                 duration: 0.8, 
-                delay: 2 + index * 0.1, 
+                delay: 1 + index * 0.1, 
                 ease: [0.16, 1, 0.3, 1] 
               }}
             >

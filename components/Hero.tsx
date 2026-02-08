@@ -29,8 +29,8 @@ export default function Hero() {
             {/* Scalar text - Logo offset +3% X relative to this */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: cureComplete ? 1 : 0 }}
-              transition={{ duration: 1, delay: 2, ease: [0.16, 1, 0.3, 1] }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-4"
             >
               {/* Logo positioned +3% X from text center */}
@@ -67,16 +67,16 @@ export default function Hero() {
                   WebkitBackdropFilter: 'blur(10px)',
                 }}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: cureComplete ? 1 : 0 }}
-                transition={{ duration: 1, delay: 2.2, ease: [0.16, 1, 0.3, 1] }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
               >
                 ordinance of depth
               </motion.p>
             </motion.div>
           </div>
         </section>
-        <DiagnosticMetadata visible={cureComplete} />
-        <BottomNav visible={cureComplete} />
+        <DiagnosticMetadata visible={true} />
+        <BottomNav visible={true} />
       </OpticalEngine>
     </>
   )

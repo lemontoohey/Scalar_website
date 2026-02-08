@@ -153,11 +153,18 @@ const fragmentShader = `
     // Combine logo and volumetrics
     vec3 finalColor = bloomColor + logo * logoColor.a * inLogoBounds;
     
-    // Alpha based on cure and logo visibility
+    // Ensure we always show something - mist when cure is low, logo when cure is high
     float alpha = max(
       logoColor.a * inLogoBounds * uCure,
-      attenuation * 0.4 * (1.0 - uCure)
+      max(
+        attenuation * 0.6 * (1.0 - uCure), // Show mist/bloom even when cure is low
+        mist * 0.3 * (1.0 - uCure) // Show mist effect
+      )
     );
+    
+    // Boost visibility
+    finalColor = finalColor * 1.2;
+    alpha = min(alpha * 1.5, 1.0);
     
     gl_FragColor = vec4(finalColor, alpha);
   }

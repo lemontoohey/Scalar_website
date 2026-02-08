@@ -13,8 +13,8 @@ export default function DiagnosticMetadata({ visible }: { visible: boolean }) {
           top: 'calc(50% - 3vh - 150px)', // Above hero
         }}
         initial={{ opacity: 0 }}
-        animate={{ opacity: visible ? 0.3 : 0 }}
-        transition={{ duration: 1, delay: 2 }}
+        animate={{ opacity: 0.3 }}
+        transition={{ duration: 1, delay: 1 }}
       >
         <div
           className="text-[8px] font-light tracking-[0.1em] text-white/30 uppercase"
@@ -31,8 +31,8 @@ export default function DiagnosticMetadata({ visible }: { visible: boolean }) {
       <motion.div
         className="fixed top-8 right-8 z-50"
         initial={{ opacity: 0 }}
-        animate={{ opacity: visible ? 0.3 : 0 }}
-        transition={{ duration: 1, delay: 2 }}
+        animate={{ opacity: 0.3 }}
+        transition={{ duration: 1, delay: 1 }}
       >
         <div
           className="text-[8px] font-light tracking-[0.1em] text-white/30 uppercase"
