@@ -2,8 +2,10 @@
 
 import { useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
+import { AnimatePresence } from 'framer-motion'
+import type { Specimen } from '@/constants/specimens'
 import Hallmark from '@/components/Hallmark'
-import BottomNav from '@/components/BottomNav'
+import GlobalNav from '@/components/GlobalNav'
 import EnsoEchoCursor from '@/components/EnsoEchoCursor'
 import MetadataOverlays from '@/components/MetadataOverlays'
 import HardwareHandshake from '@/components/HardwareHandshake'
@@ -13,6 +15,7 @@ import BifurcationView from '@/components/BifurcationView'
 import SpecimenGrid from '@/components/SpecimenGrid'
 import RefractiveTransition from '@/components/RefractiveTransition'
 import ProcurementTerminal from '@/components/ProcurementTerminal'
+import MaterialGenome from '@/components/MaterialGenome'
 
 const HeroView = dynamic(() => import('@/components/HeroView'), { ssr: false })
 
@@ -22,6 +25,9 @@ export default function Home() {
   const [state, setState] = useState<PageState>('hero')
   const [selectedCategory, setSelectedCategory] = useState<'organic' | 'inorganic' | null>(null)
   const [transitionActive, setTransitionActive] = useState(false)
+  const [procurementOpen, setProcurementOpen] = useState(false)
+  const [procurementSpecimenName, setProcurementSpecimenName] = useState('')
+  const [viewingSpecimen, setViewingSpecimen] = useState<Specimen | null>(null)
 
   const goToBifurcation = useCallback(() => {
     setState('bifurcation')
@@ -40,6 +46,15 @@ export default function Home() {
     setTimeout(() => setTransitionActive(false), 600)
   }, [])
 
+  const openProcurement = useCallback((specimenName: string) => {
+    setProcurementSpecimenName(specimenName)
+    setProcurementOpen(true)
+  }, [])
+
+  const viewSpecimen = useCallback((specimen: Specimen) => {
+    setViewingSpecimen(specimen)
+  }, [])
+
   return (
     <main className="min-h-screen bg-black" style={{ backgroundColor: '#000502' }}>
       <AtmosphericAudio />
@@ -48,18 +63,32 @@ export default function Home() {
       <MetadataOverlays />
       <HardwareHandshake />
       <ScanningLine />
-      <BottomNav visible={true} />
+      <GlobalNav />
 
       {state === 'hero' && <HeroView onCureComplete={goToBifurcation} />}
       {state === 'bifurcation' && (
         <BifurcationView onSelect={onSelectCategory} onTransitionStart={onTransitionStart} />
       )}
       {state === 'gallery' && selectedCategory && (
-        <SpecimenGrid category={selectedCategory} />
+        <SpecimenGrid
+          category={selectedCategory}
+          onInitiateProcurement={openProcurement}
+          onViewSpecimen={viewSpecimen}
+        />
       )}
 
       <RefractiveTransition trigger={transitionActive} onPeak={onTransitionPeak} />
-      <ProcurementTerminal />
+      <ProcurementTerminal
+        isOpen={procurementOpen}
+        onClose={() => setProcurementOpen(false)}
+        specimenName={procurementSpecimenName}
+      />
+
+      <AnimatePresence>
+        {viewingSpecimen && (
+          <MaterialGenome specimen={viewingSpecimen} onClose={() => setViewingSpecimen(null)} />
+        )}
+      </AnimatePresence>
     </main>
   )
 }

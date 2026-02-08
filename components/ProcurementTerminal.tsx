@@ -1,97 +1,129 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSound } from '@/hooks/useSound'
 
-export default function ProcurementTerminal() {
-  const [open, setOpen] = useState(false)
-  const [project, setProject] = useState('')
-  const [volume, setVolume] = useState('')
-  const [facility, setFacility] = useState('')
+const LOG_ENTRIES = [
+  'INITIALIZING_INQUIRY...',
+  'FETCHING_INVENTORY_VOL...',
+  'VALIDATING_FACILITY_CODE...',
+  'CALIBRATING_REFRACTIVE_STABILITY...',
+  'CROSS_REFERENCING_MATERIAL_GENOME...',
+  'AUTHORIZING_PROCUREMENT_LOCK...',
+]
+
+type ProcurementTerminalProps = {
+  isOpen: boolean
+  onClose: () => void
+  specimenName: string
+}
+
+export default function ProcurementTerminal({ isOpen, onClose, specimenName }: ProcurementTerminalProps) {
+  const { playThud } = useSound()
+  const [status, setStatus] = useState<'idle' | 'processing' | 'authorized'>('idle')
+  const [logs, setLogs] = useState<string[]>([])
+  const [projectDesignation, setProjectDesignation] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) inputRef.current.focus()
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setStatus('idle')
+      setLogs([])
+      setProjectDesignation('')
+    }
+  }, [isOpen])
+
+  const startAuthorization = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!projectDesignation.trim()) return
+
+    setStatus('processing')
+    playThud()
+
+    LOG_ENTRIES.forEach((entry, i) => {
+      setTimeout(() => {
+        setLogs((prev) => [...prev, `> ${entry}`])
+      }, i * 400)
+    })
+
+    setTimeout(() => {
+      setStatus('authorized')
+      playThud()
+    }, LOG_ENTRIES.length * 400 + 500)
+  }
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-8 z-[100] px-6 py-3 text-sm font-light tracking-[0.2em] lowercase border border-white/20 text-white/60 hover:text-white"
-        style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
-      >
-        Initiate Procurement
-      </button>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className="fixed top-0 right-0 w-[400px] h-full bg-[#000502] border-l border-[#FCFBF8]/10 z-[200] p-8 font-mono text-[10px] text-[#FCFBF8]/80"
+          style={{ fontFamily: 'var(--font-archivo)' }}
+        >
+          <div className="mb-8 flex justify-between items-start">
+            <h2 className="text-[#A80000] tracking-widest uppercase">INPUT_REQUIRED // PROC_01</h2>
+            <button type="button" onClick={onClose} className="hover:text-[#A80000]">
+              [close]
+            </button>
+          </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.aside
-            className="fixed top-0 right-0 bottom-0 z-[200] border-l"
-            style={{
-              width: '350px',
-              backgroundColor: '#000502',
-              borderLeftWidth: '1px',
-              borderColor: 'rgba(245,245,220,0.2)',
-            }}
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          >
-            <div className="p-6 h-full flex flex-col">
-              <div className="text-[10px] font-mono tracking-wider text-white/50 uppercase mb-6" style={{ fontFamily: 'var(--font-archivo)' }}>
-                INPUT_REQUIRED // PROCUREMENT_01
-              </div>
-              <div className="space-y-4 flex-1">
-                <div>
-                  <label className="block text-[10px] font-mono text-white/40 uppercase mb-1" style={{ fontFamily: 'var(--font-archivo)' }}>
-                    PROJECT_DESIGNATION:
-                  </label>
-                  <input
-                    type="text"
-                    value={project}
-                    onChange={(e) => setProject(e.target.value)}
-                    className="w-full bg-transparent text-white text-[10px] font-mono focus:outline-none caret-white"
-                    style={{ fontFamily: 'var(--font-archivo)' }}
-                    placeholder="_"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono text-white/40 uppercase mb-1" style={{ fontFamily: 'var(--font-archivo)' }}>
-                    REQ_VOLUME_L:
-                  </label>
-                  <input
-                    type="text"
-                    value={volume}
-                    onChange={(e) => setVolume(e.target.value)}
-                    className="w-full bg-transparent text-white text-[10px] font-mono focus:outline-none caret-white"
-                    style={{ fontFamily: 'var(--font-archivo)' }}
-                    placeholder="_"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono text-white/40 uppercase mb-1" style={{ fontFamily: 'var(--font-archivo)' }}>
-                    FACILITY_CODE:
-                  </label>
-                  <input
-                    type="text"
-                    value={facility}
-                    onChange={(e) => setFacility(e.target.value)}
-                    className="w-full bg-transparent text-white text-[10px] font-mono focus:outline-none caret-white"
-                    style={{ fontFamily: 'var(--font-archivo)' }}
-                    placeholder="_"
-                  />
-                </div>
+          <div className="mb-4 text-[#A80000]/40">SPECIMEN: {specimenName}</div>
+
+          {status === 'idle' && (
+            <form onSubmit={startAuthorization} className="space-y-4">
+              <div>
+                <label className="block mb-1 text-[8px] opacity-40 uppercase">
+                  Project Designation
+                </label>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={projectDesignation}
+                  onChange={(e) => setProjectDesignation(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none text-[#FCFBF8] uppercase caret-[#A80000]"
+                  placeholder="enter_id_"
+                />
               </div>
               <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-[10px] font-mono tracking-wider text-white/50 hover:text-white uppercase mt-4"
-                style={{ fontFamily: 'var(--font-archivo)' }}
+                type="submit"
+                className="text-[8px] border border-[#FCFBF8]/20 px-2 py-1 hover:bg-[#FCFBF8] hover:text-[#000502] transition-colors"
               >
-                [close]
+                INITIATE_AUTH
               </button>
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-    </>
+            </form>
+          )}
+
+          <div className="mt-8 space-y-1">
+            {logs.map((log, i) => (
+              <div key={i} className="animate-pulse">
+                {log}
+              </div>
+            ))}
+          </div>
+
+          {status === 'authorized' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-12 p-4 border border-[#A80000] text-[#A80000] font-bold text-center uppercase tracking-[0.2em]"
+            >
+              PROJECT_AUTHORIZED
+              <br />
+              <span className="text-[8px] opacity-60">
+                Allocation code: SC-0{Math.floor(Math.random() * 999)}
+              </span>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }

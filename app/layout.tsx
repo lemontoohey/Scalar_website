@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Archivo, Archivo_Narrow } from 'next/font/google'
 import SmoothScroll from '@/components/SmoothScroll'
 import ClientErrorBoundary from '@/components/ClientErrorBoundary'
+import DiagnosticLine from '@/components/DiagnosticLine'
 import './globals.css'
 
 const archivo = Archivo({
@@ -31,6 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${archivo.variable} ${archivoNarrow.variable} bg-black text-white`}>
+        <DiagnosticLine />
         <ClientErrorBoundary>
           <SmoothScroll>
             {children}

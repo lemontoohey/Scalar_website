@@ -6,7 +6,15 @@ import { SPECIMENS, type Specimen } from '@/constants/specimens'
 
 const TECHNICAL_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.'
 
-function SpecimenCard({ specimen }: { specimen: Specimen }) {
+function SpecimenCard({
+  specimen,
+  onInitiateProcurement,
+  onViewSpecimen,
+}: {
+  specimen: Specimen
+  onInitiateProcurement: (name: string) => void
+  onViewSpecimen: (specimen: Specimen) => void
+}) {
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [flicker, setFlicker] = useState<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -47,7 +55,16 @@ function SpecimenCard({ specimen }: { specimen: Specimen }) {
 
   return (
     <motion.div
-      className="relative aspect-square rounded-lg overflow-hidden"
+      role="button"
+      tabIndex={0}
+      onClick={() => onViewSpecimen(specimen)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onViewSpecimen(specimen)
+        }
+      }}
+      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"
       style={{
         borderRadius: '8px',
         border: '1px solid rgba(245, 245, 220, 0.1)',
@@ -96,6 +113,17 @@ function SpecimenCard({ specimen }: { specimen: Specimen }) {
         >
           {specimen.name}
         </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onInitiateProcurement(specimen.name)
+          }}
+          className="mt-2 text-[8px] uppercase tracking-wider border border-[#FCFBF8]/20 text-[#FCFBF8]/60 hover:text-[#FCFBF8] hover:border-[#FCFBF8]/40 transition-colors px-2 py-1"
+          style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
+        >
+          Initiate Procurement
+        </button>
       </div>
     </motion.div>
   )
@@ -103,9 +131,15 @@ function SpecimenCard({ specimen }: { specimen: Specimen }) {
 
 type SpecimenGridProps = {
   category: 'organic' | 'inorganic'
+  onInitiateProcurement: (specimenName: string) => void
+  onViewSpecimen: (specimen: Specimen) => void
 }
 
-export default function SpecimenGrid({ category }: SpecimenGridProps) {
+export default function SpecimenGrid({
+  category,
+  onInitiateProcurement,
+  onViewSpecimen,
+}: SpecimenGridProps) {
   const filtered = SPECIMENS.filter((s) => s.category === category)
 
   return (
@@ -116,7 +150,12 @@ export default function SpecimenGrid({ category }: SpecimenGridProps) {
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
           {filtered.map((specimen) => (
-            <SpecimenCard key={specimen.id} specimen={specimen} />
+            <SpecimenCard
+              key={specimen.id}
+              specimen={specimen}
+              onInitiateProcurement={onInitiateProcurement}
+              onViewSpecimen={onViewSpecimen}
+            />
           ))}
         </div>
       </div>
