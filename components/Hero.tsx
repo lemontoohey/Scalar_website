@@ -6,12 +6,14 @@ import OpticalEngine from './OpticalEngine'
 import BottomNav from './BottomNav'
 import DiagnosticMetadata from './DiagnosticMetadata'
 import EnsoEchoCursor from './EnsoEchoCursor'
+import DebugOverlay from './DebugOverlay'
 
 export default function Hero() {
   const [cureComplete, setCureComplete] = useState(false)
 
   return (
     <>
+      <DebugOverlay />
       <EnsoEchoCursor />
       <OpticalEngine onCureComplete={() => setCureComplete(true)}>
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
