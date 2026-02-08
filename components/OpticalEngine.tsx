@@ -1,26 +1,11 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { motion } from 'framer-motion'
-import ErrorBoundary from './ErrorBoundary'
-
-const Canvas = dynamic(
-  async () => {
-    const mod = await import('@react-three/fiber')
-    return { default: mod.Canvas }
-  },
-  { 
-    ssr: false,
-    loading: () => null
-  }
-)
+import ClientCanvas from './ClientCanvas'
 
 const SafeFluidCureShader = dynamic(
-  async () => {
-    const mod = await import('./SafeFluidCureShader')
-    return { default: mod.default }
-  },
+  () => import('./SafeFluidCureShader'),
   { 
     ssr: false,
     loading: () => null
@@ -107,26 +92,9 @@ export default function OpticalEngine({
   return (
     <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
       {mounted && useShader ? (
-        <ErrorBoundary fallback={<FallbackBackground />}>
-          <Suspense fallback={<FallbackBackground />}>
-            <Canvas
-              className="absolute inset-0"
-              style={{ zIndex: 1 }}
-              gl={{ 
-                alpha: true, 
-                antialias: true,
-                powerPreference: 'high-performance',
-                failIfMajorPerformanceCaveat: false
-              }}
-              onError={(error) => {
-                console.error('Canvas error:', error)
-                setUseShader(false)
-              }}
-            >
-              <SafeFluidCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
-            </Canvas>
-          </Suspense>
-        </ErrorBoundary>
+        <ClientCanvas fallback={<FallbackBackground />}>
+          <SafeFluidCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
+        </ClientCanvas>
       ) : (
         <FallbackBackground />
       )}
