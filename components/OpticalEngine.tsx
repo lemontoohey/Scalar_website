@@ -13,8 +13,8 @@ const Canvas = dynamic(
   }
 )
 
-const RefractiveVoid = dynamic(
-  () => import('./RefractiveVoid'),
+const LogoCureShader = dynamic(
+  () => import('./LogoCureShader'),
   { 
     ssr: false,
     loading: () => null
@@ -23,34 +23,26 @@ const RefractiveVoid = dynamic(
 
 function FallbackBackground() {
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden bg-black">
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 flex items-center justify-center"
         style={{
           background: `
-            radial-gradient(circle at 50% 50%, rgba(168, 0, 0, 0.3) 0%, rgba(0, 26, 35, 0.5) 50%, #000000 100%)
+            radial-gradient(circle at 50% 50%, rgba(168, 0, 0, 0.2) 0%, rgba(0, 0, 0, 1) 70%)
           `,
-          backdropFilter: 'blur(100px)',
-        }}
-      />
-      <motion.div
-        className="absolute top-1/4 left-1/4 w-96 h-96 bg-scalar-red/20 rounded-full blur-3xl"
-        animate={{
-          x: [0, 100, 0],
-          y: [0, 50, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: 'easeInOut',
         }}
       />
     </div>
   )
 }
 
-export default function OpticalEngine({ children }: { children: React.ReactNode }) {
+export default function OpticalEngine({ 
+  children,
+  onCureComplete 
+}: { 
+  children: React.ReactNode
+  onCureComplete?: () => void
+}) {
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 })
   const [mounted, setMounted] = useState(false)
   const [useShader, setUseShader] = useState(false)
@@ -75,12 +67,25 @@ export default function OpticalEngine({ children }: { children: React.ReactNode 
       setMouse({ x, y })
     }
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0]
+        const x = touch.clientX / window.innerWidth
+        const y = 1 - touch.clientY / window.innerHeight
+        setMouse({ x, y })
+      }
+    }
+
     window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
+    window.addEventListener('touchmove', handleTouchMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('touchmove', handleTouchMove)
+    }
   }, [])
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden bg-black">
       <ErrorBoundary fallback={<FallbackBackground />}>
         {mounted && useShader ? (
           <Suspense fallback={<FallbackBackground />}>
@@ -97,7 +102,7 @@ export default function OpticalEngine({ children }: { children: React.ReactNode 
                 setUseShader(false)
               }}
             >
-              <RefractiveVoid mouse={mouse} />
+              <LogoCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
             </Canvas>
           </Suspense>
         ) : (
