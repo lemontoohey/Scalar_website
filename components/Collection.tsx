@@ -33,7 +33,7 @@ export default function Collection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section id="collection" className="py-32 bg-scalar-black-dark">
+    <section id="collection" className="py-32 bg-scalar-black-dark blueprint-grid">
       <div className="container mx-auto px-6">
         <motion.div
           ref={ref}
@@ -75,8 +75,8 @@ export default function Collection() {
                           delay: categoryIndex * 0.15 + productIndex * 0.1,
                         }}
                       >
-                        <div className="flex-shrink-0 w-16 h-16 glass-effect rounded flex items-center justify-center">
-                          <span className="text-lg font-heading font-bold text-scalar-red">
+                        <div className="flex-shrink-0 w-16 h-16 glass-effect rounded-sm flex items-center justify-center">
+                          <span className="text-lg font-mono font-bold text-scalar-red uppercase">
                             {product.symbol}
                           </span>
                         </div>

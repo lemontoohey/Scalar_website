@@ -20,8 +20,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        heading: ['var(--font-space-grotesk)', 'sans-serif'],
-        body: ['var(--font-inter)', 'sans-serif'],
+        mono: ['var(--font-ibm-plex-mono)', 'monospace'],
+        sans: ['var(--font-ibm-plex-sans)', 'sans-serif'],
+        heading: ['var(--font-ibm-plex-mono)', 'monospace'],
+        body: ['var(--font-ibm-plex-sans)', 'sans-serif'],
       },
       backdropBlur: {
         xs: '2px',

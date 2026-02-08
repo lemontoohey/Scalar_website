@@ -11,7 +11,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Partners */}
           <div>
-            <h3 className="text-sm font-body tracking-wider text-white/40 uppercase mb-6">
+            <h3 className="text-sm font-mono tracking-wider text-white/40 uppercase mb-6">
               Partners
             </h3>
             <ul className="space-y-2">
@@ -42,7 +42,7 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="pt-8 border-t border-white/10">
-          <p className="text-xs font-body tracking-wider text-white/40 text-center uppercase">
+          <p className="text-xs font-mono tracking-wider text-white/40 text-center uppercase">
             © {new Date().getFullYear()} Scalar Materials. All rights reserved.
           </p>
         </div>

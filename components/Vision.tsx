@@ -15,7 +15,7 @@ export default function Vision() {
   ]
 
   return (
-    <section id="vision" className="py-32 bg-scalar-black-dark">
+    <section id="vision" className="py-32 bg-scalar-black-dark blueprint-grid">
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           {/* Text Side */}
@@ -43,10 +43,10 @@ export default function Vision() {
                   transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
                 >
                   <div className="flex justify-between items-baseline">
-                    <span className="text-sm font-body tracking-wider text-white/60 uppercase">
+                    <span className="text-sm font-mono tracking-wider text-white/60 uppercase">
                       {spec.label}
                     </span>
-                    <span className="text-2xl font-heading font-bold text-scalar-red">
+                    <span className="text-2xl font-mono font-bold text-scalar-red">
                       {spec.value}
                     </span>
                   </div>
@@ -63,7 +63,7 @@ export default function Vision() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-scalar-red/20 via-transparent to-scalar-red/10 flex items-center justify-center">
-              <p className="text-white/30 font-body text-sm tracking-wider uppercase">
+              <p className="text-white/30 font-mono text-sm tracking-wider uppercase">
                 Macro Photography<br />Pigment Detail
               </p>
             </div>

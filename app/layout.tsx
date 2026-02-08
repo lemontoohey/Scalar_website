@@ -1,16 +1,18 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk, Inter } from 'next/font/google'
+import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google'
 import './globals.css'
 
-const spaceGrotesk = Space_Grotesk({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ['latin'],
-  variable: '--font-space-grotesk',
+  weight: ['400', '700'],
+  variable: '--font-ibm-plex-mono',
   display: 'swap',
 })
 
-const inter = Inter({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['300', '400', '500'],
+  variable: '--font-ibm-plex-sans',
   display: 'swap',
 })
 
@@ -26,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${spaceGrotesk.variable} ${inter.variable}`}>
+      <body className={`${ibmPlexMono.variable} ${ibmPlexSans.variable}`}>
         {children}
       </body>
     </html>

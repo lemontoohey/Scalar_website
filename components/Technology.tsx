@@ -34,7 +34,7 @@ export default function Technology() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   return (
-    <section id="technology" className="py-32 bg-scalar-black-charcoal">
+    <section id="technology" className="py-32 bg-scalar-black-charcoal blueprint-grid">
       <div className="container mx-auto px-6">
         <motion.div
           ref={ref}
@@ -63,10 +63,10 @@ export default function Technology() {
             >
               <GlassCard className="h-full">
                 <div className="space-y-4">
-                  <div className="text-xs font-body tracking-wider text-white/40 uppercase">
+                  <div className="text-xs font-mono tracking-wider text-white/40 uppercase">
                     {stage.title}
                   </div>
-                  <h4 className="text-xl font-heading font-bold text-scalar-red">
+                  <h4 className="text-xl font-mono font-bold text-scalar-red">
                     {stage.subtitle}
                   </h4>
                   <motion.p

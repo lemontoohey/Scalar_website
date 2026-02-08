@@ -33,7 +33,7 @@ export default function SecretMenu() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section className="py-32 bg-scalar-black-charcoal">
+    <section className="py-32 bg-scalar-black-charcoal blueprint-grid">
       <div className="container mx-auto px-6">
         <motion.div
           ref={ref}
@@ -60,10 +60,10 @@ export default function SecretMenu() {
             >
               <GlassCard className="h-full text-center">
                 <div className="space-y-4">
-                  <div className="text-xs font-body tracking-wider text-white/40 uppercase mb-2">
+                  <div className="text-xs font-mono tracking-wider text-white/40 uppercase mb-2">
                     {pigment.code}
                   </div>
-                  <h3 className="text-xl font-heading font-bold text-scalar-red mb-2">
+                  <h3 className="text-xl font-mono font-bold text-scalar-red mb-2">
                     {pigment.name}
                   </h3>
                   <p className="text-sm font-body tracking-tight text-white/60 italic">
