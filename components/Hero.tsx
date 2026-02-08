@@ -35,12 +35,14 @@ export default function Hero() {
       
       <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
         {/* Cure Sequence Background with 3D Text */}
-        <ClientCanvas fallback={null}>
-          <CureSequenceShader onCureComplete={() => setCureComplete(true)} />
-          <LensText position={[0, 0.3, 0]} fontSize={2.5}>
-            Scalar
-          </LensText>
-        </ClientCanvas>
+        {typeof window !== 'undefined' && (
+          <ClientCanvas fallback={null}>
+            <CureSequenceShader onCureComplete={() => setCureComplete(true)} />
+            <LensText position={[0, 0.3, 0]} fontSize={2.5}>
+              Scalar
+            </LensText>
+          </ClientCanvas>
+        )}
 
         {/* Hero Text Overlay (for subtitle and fallback) */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden pointer-events-none">

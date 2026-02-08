@@ -23,8 +23,31 @@ export default function ClientCanvas({
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Ensure React is fully loaded before rendering Canvas
-    setMounted(true)
+    // Wait for React to be fully initialized
+    // Use multiple animation frames to ensure React internals are available
+    if (typeof window === 'undefined') {
+      setMounted(true)
+      return
+    }
+    
+    // Wait for React to initialize its internals
+    // Multiple RAF calls ensure we're past React's initialization phase
+    let rafId1: number
+    let rafId2: number
+    
+    rafId1 = requestAnimationFrame(() => {
+      rafId2 = requestAnimationFrame(() => {
+        // One more frame to be absolutely sure
+        requestAnimationFrame(() => {
+          setMounted(true)
+        })
+      })
+    })
+
+    return () => {
+      if (rafId1) cancelAnimationFrame(rafId1)
+      if (rafId2) cancelAnimationFrame(rafId2)
+    }
   }, [])
 
   if (!mounted) {
