@@ -3,15 +3,22 @@
 import { Suspense, useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
+import ErrorBoundary from './ErrorBoundary'
 
 const Canvas = dynamic(
   () => import('@react-three/fiber').then((mod) => mod.Canvas),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => null
+  }
 )
 
 const RefractiveVoid = dynamic(
   () => import('./RefractiveVoid'),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => null
+  }
 )
 
 function FallbackBackground() {
@@ -46,9 +53,22 @@ function FallbackBackground() {
 export default function OpticalEngine({ children }: { children: React.ReactNode }) {
   const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 })
   const [mounted, setMounted] = useState(false)
+  const [useShader, setUseShader] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    
+    // Check WebGL support before attempting to use shader
+    try {
+      const canvas = document.createElement('canvas')
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+      if (gl) {
+        setUseShader(true)
+      }
+    } catch (e) {
+      console.warn('WebGL check failed, using fallback:', e)
+    }
+
     const handleMouseMove = (e: MouseEvent) => {
       const x = e.clientX / window.innerWidth
       const y = 1 - e.clientY / window.innerHeight
@@ -61,18 +81,29 @@ export default function OpticalEngine({ children }: { children: React.ReactNode 
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {mounted ? (
-        <Suspense fallback={<FallbackBackground />}>
-          <Canvas
-            className="absolute inset-0"
-            gl={{ alpha: true, antialias: true }}
-          >
-            <RefractiveVoid mouse={mouse} />
-          </Canvas>
-        </Suspense>
-      ) : (
-        <FallbackBackground />
-      )}
+      <ErrorBoundary fallback={<FallbackBackground />}>
+        {mounted && useShader ? (
+          <Suspense fallback={<FallbackBackground />}>
+            <Canvas
+              className="absolute inset-0"
+              gl={{ 
+                alpha: true, 
+                antialias: true,
+                powerPreference: 'high-performance',
+                failIfMajorPerformanceCaveat: false
+              }}
+              onError={(error) => {
+                console.error('Canvas error:', error)
+                setUseShader(false)
+              }}
+            >
+              <RefractiveVoid mouse={mouse} />
+            </Canvas>
+          </Suspense>
+        ) : (
+          <FallbackBackground />
+        )}
+      </ErrorBoundary>
       
       <div className="relative z-10">
         {children}

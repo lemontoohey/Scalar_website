@@ -115,8 +115,8 @@ export default function RefractiveVoid({ mouse }: { mouse: { x: number; y: numbe
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
-      uResolution: { value: new THREE.Vector2(size.width, size.height) },
+      uMouse: { value: [0.5, 0.5] },
+      uResolution: { value: [size.width, size.height] },
       uPerformance: { value: 1.0 },
     }),
     [size.width, size.height]
@@ -125,9 +125,11 @@ export default function RefractiveVoid({ mouse }: { mouse: { x: number; y: numbe
   useFrame((state) => {
     if (meshRef.current) {
       const material = meshRef.current.material as THREE.ShaderMaterial
-      material.uniforms.uTime.value = state.clock.elapsedTime
-      material.uniforms.uMouse.value.set(mouse.x, mouse.y)
-      material.uniforms.uPerformance.value = performance
+      if (material && material.uniforms) {
+        material.uniforms.uTime.value = state.clock.elapsedTime
+        material.uniforms.uMouse.value = [mouse.x, mouse.y]
+        material.uniforms.uPerformance.value = performance
+      }
     }
   })
 
