@@ -41,8 +41,20 @@ export default function Hero() {
                   display: 'inline-block',
                 }}
               >
-                {/* Logo is rendered in the shader, this is a placeholder for positioning */}
-                <div className="w-[35vh] h-[35vh] opacity-0 pointer-events-none" />
+                {/* Fallback logo in case shader fails */}
+                <img
+                  src="/logo.png"
+                  alt="Scalar Enso"
+                  className="w-[35vh] h-[35vh] object-contain opacity-50"
+                  style={{
+                    filter: 'drop-shadow(0 0 20px rgba(168, 0, 0, 0.5))',
+                    mixBlendMode: 'screen',
+                  }}
+                  onError={(e) => {
+                    console.error('Fallback logo failed to load')
+                    (e.target as HTMLImageElement).style.display = 'none'
+                  }}
+                />
               </div>
 
               <h1 
