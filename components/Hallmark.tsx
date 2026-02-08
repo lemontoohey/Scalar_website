@@ -2,10 +2,32 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { playLensClick } from '@/hooks/useSound'
 
-export default function Hallmark() {
+type HallmarkProps = {
+  onReset?: () => void
+}
+
+export default function Hallmark({ onReset }: HallmarkProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (onReset) {
+      e.preventDefault()
+      onReset()
+    }
+  }
+
+  const handleMouseEnter = () => {
+    if (onReset) playLensClick()
+  }
+
   return (
-    <Link href="/" className="fixed top-8 left-8 z-[100] group">
+    <Link
+      href="/"
+      className="fixed top-8 left-8 z-[100] group cursor-pointer"
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      aria-label="Scalar Materials – reset to home"
+    >
       <motion.div
         className="relative"
         style={{

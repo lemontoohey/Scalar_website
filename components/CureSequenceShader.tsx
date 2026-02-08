@@ -53,12 +53,23 @@ const fragmentShader = `
     mist = pow(mist, 1.2);
     float distFromCenter = length(uv - center);
     float glow = exp(-distFromCenter * (3.0 + uCure * 5.0)) * (1.0 + uCure * 2.0);
-    vec3 color = mix(
-      vec3(0.658, 0.0, 0.0) * mist * 0.5,
-      vec3(0.658, 0.0, 0.0) * glow,
-      uCure
-    );
-    gl_FragColor = vec4(color, max(mist * (1.0 - uCure), glow * uCure));
+    float density = max(mist * (1.0 - uCure), glow * uCure);
+
+    // Palette: Scalar Red (thick), Deep Oxide (thin), Cold Blue (thinnest)
+    vec3 scalarRed = vec3(0.659, 0.0, 0.0);
+    vec3 deepOxide = vec3(0.122, 0.02, 0.063);
+    vec3 coldBlue = vec3(0.0, 0.063, 0.125);
+    vec3 darkBase = vec3(0.29, 0.0, 0.0);
+
+    // Thick mist -> Scalar Red; thin/fading -> Deep Oxide; thinnest -> hint of Cold Blue
+    float t = smoothstep(0.15, 0.7, density);
+    vec3 color = mix(deepOxide, scalarRed, t);
+    float thin = 1.0 - smoothstep(0.0, 0.25, density);
+    color = mix(color, coldBlue, thin * 0.25);
+    color = mix(darkBase, color, min(density * 1.2, 1.0));
+
+    float alpha = max(mist * (1.0 - uCure), glow * uCure);
+    gl_FragColor = vec4(color, alpha);
   }
 `
 

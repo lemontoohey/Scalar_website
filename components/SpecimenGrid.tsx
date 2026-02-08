@@ -53,6 +53,10 @@ function SpecimenCard({
     setFlicker(null)
   }
 
+  const insetGlowShadow = `inset 0 0 0 0 ${specimen.color}00`
+  const insetGlowShadowHover = `inset 0 0 50px -10px ${specimen.color}40`
+  const borderColorHover = `${specimen.color}80`
+
   return (
     <motion.div
       role="button"
@@ -64,10 +68,11 @@ function SpecimenCard({
           onViewSpecimen(specimen)
         }
       }}
-      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"
-      style={{
-        borderRadius: '8px',
-        border: '1px solid rgba(245, 245, 220, 0.1)',
+      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer border border-[#FCFBF8]/10"
+      style={{ borderRadius: '8px' }}
+      initial={{
+        boxShadow: insetGlowShadow,
+        borderColor: 'rgba(252, 251, 248, 0.1)',
       }}
       onMouseMove={(e) => {
         const rect = e.currentTarget.getBoundingClientRect()
@@ -78,8 +83,18 @@ function SpecimenCard({
       }}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      whileHover={{ scale: 1.02 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      whileHover={{
+        scale: 1.02,
+        boxShadow: insetGlowShadowHover,
+        borderColor: borderColorHover,
+      }}
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 20,
+        boxShadow: { duration: 0.7, ease: [0, 0.55, 0.45, 1] },
+        borderColor: { duration: 0.7, ease: [0, 0.55, 0.45, 1] },
+      }}
     >
       {/* Depth: color layer moves -10% opposite to mouse (trapped behind glass) */}
       <div
@@ -133,18 +148,20 @@ type SpecimenGridProps = {
   category: 'organic' | 'inorganic'
   onInitiateProcurement: (specimenName: string) => void
   onViewSpecimen: (specimen: Specimen) => void
+  contained?: boolean
 }
 
 export default function SpecimenGrid({
   category,
   onInitiateProcurement,
   onViewSpecimen,
+  contained = false,
 }: SpecimenGridProps) {
   const filtered = SPECIMENS.filter((s) => s.category === category)
 
   return (
     <section
-      className="fixed inset-0 overflow-auto z-10 pt-24 pb-32"
+      className={`overflow-auto pt-24 pb-32 z-10 ${contained ? 'absolute inset-0' : 'fixed inset-0'}`}
       style={{ backgroundColor: '#000502' }}
     >
       <div className="container mx-auto px-6">

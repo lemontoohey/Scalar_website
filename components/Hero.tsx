@@ -36,8 +36,8 @@ export default function Hero() {
       <ScanningLine />
       
       <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
-        {/* Fallback background when 3D fails - always visible, red mist effect */}
-        <div 
+        {/* Layer 1 (Back): WebGL Mist - full screen */}
+        <div
           className="absolute inset-0 z-0 opacity-60"
           style={{
             background: 'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(168,0,0,0.4) 0%, transparent 70%)',
@@ -63,13 +63,11 @@ export default function Hero() {
           </ClientCanvas>
         )}
 
-        {/* Hero Text - always in HTML so it works even when 3D fails */}
+        {/* Layer 2 (Middle): Hero text - center */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden pointer-events-none">
-          <div 
+          <div
             className="relative text-center"
-            style={{
-              zIndex: 50,
-            }}
+            style={{ zIndex: 50 }}
           >
             <motion.div
               initial={{ opacity: 0 }}
@@ -108,9 +106,12 @@ export default function Hero() {
           </div>
         </section>
 
-        <ProductArchitecture />
-        <SpecimenGallery />
-        <ProcurementGate />
+        {/* Layer 3 (Front): UI below text - push down with margin-top 8vh to avoid overlap */}
+        <div style={{ marginTop: '8vh' }}>
+          <ProductArchitecture />
+          <SpecimenGallery />
+          <ProcurementGate />
+        </div>
         <BottomNav visible={true} />
       </div>
     </>

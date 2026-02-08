@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Specimen } from '@/constants/specimens'
+import { playThud } from '@/hooks/useSound'
 import Hallmark from '@/components/Hallmark'
 import GlobalNav from '@/components/GlobalNav'
 import EnsoEchoCursor from '@/components/EnsoEchoCursor'
@@ -11,26 +12,45 @@ import MetadataOverlays from '@/components/MetadataOverlays'
 import HardwareHandshake from '@/components/HardwareHandshake'
 import AtmosphericAudio from '@/components/AtmosphericAudio'
 import ScanningLine from '@/components/ScanningLine'
-import BifurcationView from '@/components/BifurcationView'
 import SpecimenGrid from '@/components/SpecimenGrid'
 import RefractiveTransition from '@/components/RefractiveTransition'
 import ProcurementTerminal from '@/components/ProcurementTerminal'
 import MaterialGenome from '@/components/MaterialGenome'
+import InnovationLayer from '@/components/InnovationLayer'
 
 const HeroView = dynamic(() => import('@/components/HeroView'), { ssr: false })
 
 export type PageState = 'hero' | 'bifurcation' | 'gallery'
+export type ViewMode = 'cinema' | 'innovation'
+
+const CURE_THUD_MS = 4500
 
 export default function Home() {
   const [state, setState] = useState<PageState>('hero')
+  const [viewMode, setViewMode] = useState<ViewMode>('cinema')
+  const [isCured, setIsCured] = useState(false)
+  const [mistKey, setMistKey] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState<'organic' | 'inorganic' | null>(null)
   const [transitionActive, setTransitionActive] = useState(false)
   const [procurementOpen, setProcurementOpen] = useState(false)
   const [procurementSpecimenName, setProcurementSpecimenName] = useState('')
   const [viewingSpecimen, setViewingSpecimen] = useState<Specimen | null>(null)
 
-  const goToBifurcation = useCallback(() => {
-    setState('bifurcation')
+  useEffect(() => {
+    if (state !== 'hero') return
+    const t = setTimeout(() => {
+      setIsCured(true)
+      playThud()
+    }, CURE_THUD_MS)
+    return () => clearTimeout(t)
+  }, [state, mistKey])
+
+  const resetSystem = useCallback(() => {
+    setIsCured(false)
+    setSelectedCategory(null)
+    setViewingSpecimen(null)
+    setState('hero')
+    setMistKey((k) => k + 1)
   }, [])
 
   const onSelectCategory = useCallback((category: 'organic' | 'inorganic') => {
@@ -59,22 +79,36 @@ export default function Home() {
     <main className="min-h-screen bg-black" style={{ backgroundColor: '#000502' }}>
       <AtmosphericAudio />
       <EnsoEchoCursor />
-      <Hallmark />
+      <Hallmark onReset={resetSystem} />
       <MetadataOverlays />
       <HardwareHandshake />
       <ScanningLine />
-      <GlobalNav />
+      <GlobalNav onInnovationClick={() => setViewMode('innovation')} />
 
-      {state === 'hero' && <HeroView onCureComplete={goToBifurcation} />}
-      {state === 'bifurcation' && (
-        <BifurcationView onSelect={onSelectCategory} onTransitionStart={onTransitionStart} />
+      {state === 'hero' && (
+        <HeroView
+          key={mistKey}
+          isCured={isCured}
+          onSelectCategory={onSelectCategory}
+          onTransitionStart={onTransitionStart}
+        />
       )}
       {state === 'gallery' && selectedCategory && (
-        <SpecimenGrid
-          category={selectedCategory}
-          onInitiateProcurement={openProcurement}
-          onViewSpecimen={viewSpecimen}
-        />
+        <motion.div
+          className="fixed inset-0 z-10 origin-center overflow-hidden"
+          animate={{
+            scale: viewMode === 'innovation' ? 0.95 : 1,
+            filter: viewMode === 'innovation' ? 'blur(10px)' : 'blur(0px)',
+          }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          <SpecimenGrid
+            category={selectedCategory}
+            onInitiateProcurement={openProcurement}
+            onViewSpecimen={viewSpecimen}
+            contained
+          />
+        </motion.div>
       )}
 
       <RefractiveTransition trigger={transitionActive} onPeak={onTransitionPeak} />
@@ -87,6 +121,12 @@ export default function Home() {
       <AnimatePresence>
         {viewingSpecimen && (
           <MaterialGenome specimen={viewingSpecimen} onClose={() => setViewingSpecimen(null)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {viewMode === 'innovation' && (
+          <InnovationLayer onClose={() => setViewMode('cinema')} />
         )}
       </AnimatePresence>
     </main>

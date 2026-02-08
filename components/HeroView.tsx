@@ -8,16 +8,29 @@ const CureSequenceShader = dynamic(() => import('./CureSequenceShader'), { ssr: 
 const LensText = dynamic(() => import('./LensText'), { ssr: false })
 
 type HeroViewProps = {
-  onCureComplete?: () => void
+  isCured: boolean
+  onSelectCategory: (category: 'organic' | 'inorganic') => void
+  onTransitionStart: () => void
 }
 
-export default function HeroView({ onCureComplete }: HeroViewProps) {
+export default function HeroView({
+  isCured,
+  onSelectCategory,
+  onTransitionStart,
+}: HeroViewProps) {
+  const handleChoice = (category: 'organic' | 'inorganic') => {
+    onSelectCategory(category)
+    onTransitionStart()
+  }
+
   return (
     <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
+      {/* Layer 1 (Back): WebGL Mist - full screen */}
       <div
-        className="absolute inset-0 z-0 opacity-60"
+        className="absolute inset-0 z-0 opacity-70"
         style={{
-          background: 'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(168,0,0,0.4) 0%, transparent 70%)',
+          background:
+            'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(74,0,0,0.5) 0%, rgba(31,5,16,0.35) 40%, transparent 70%)',
         }}
         aria-hidden
       />
@@ -27,18 +40,21 @@ export default function HeroView({ onCureComplete }: HeroViewProps) {
             <div
               className="absolute inset-0 z-[1]"
               style={{
-                background: 'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(168,0,0,0.35) 0%, transparent 65%)',
+                background:
+                  'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(74,0,0,0.45) 0%, rgba(31,5,16,0.3) 40%, transparent 65%)',
               }}
             />
           }
         >
-          <CureSequenceShader onCureComplete={onCureComplete} />
+          <CureSequenceShader />
           <LensText position={[0, 0.3, 0]} fontSize={2.5}>
             Scalar
           </LensText>
         </ClientCanvas>
       )}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pointer-events-none">
+
+      {/* Layer 2 (Middle): Hero text - center */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pointer-events-none">
         <div className="relative text-center" style={{ zIndex: 50 }}>
           <motion.div
             initial={{ opacity: 0 }}
@@ -75,6 +91,32 @@ export default function HeroView({ onCureComplete }: HeroViewProps) {
             </motion.p>
           </motion.div>
         </div>
+
+        {/* Layer 3 (Front): [organic] | [inorganic] - center, below text, 8vh margin */}
+        <motion.div
+          className="flex items-center justify-center gap-12 md:gap-16 pointer-events-auto"
+          style={{ marginTop: '8vh', zIndex: 50 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isCured ? 1 : 0 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <button
+            type="button"
+            onClick={() => handleChoice('organic')}
+            className="font-light tracking-[0.4em] lowercase text-white/70 hover:text-white transition-colors"
+            style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
+          >
+            [organic]
+          </button>
+          <button
+            type="button"
+            onClick={() => handleChoice('inorganic')}
+            className="font-light tracking-[0.4em] lowercase text-white/70 hover:text-white transition-colors"
+            style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
+          >
+            [inorganic]
+          </button>
+        </motion.div>
       </section>
     </div>
   )

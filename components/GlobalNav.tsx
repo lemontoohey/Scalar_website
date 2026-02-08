@@ -1,13 +1,30 @@
 'use client'
 
-export default function GlobalNav() {
+type GlobalNavProps = {
+  onInnovationClick?: () => void
+}
+
+export default function GlobalNav({ onInnovationClick }: GlobalNavProps) {
   return (
     <div className="fixed bottom-0 left-0 w-full z-40 border-t border-[#FCFBF8]/10 bg-[#000502]/80 backdrop-blur-sm">
       <div className="flex justify-between items-center px-6 py-3 text-[10px] font-mono text-[#FCFBF8]/60 tracking-widest uppercase">
         {/* Left: The Navigation */}
         <div className="flex gap-8">
           <span className="hover:text-[#A80000] cursor-pointer transition-colors">home</span>
-          <span className="hover:text-[#A80000] cursor-pointer transition-colors">innovation</span>
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={onInnovationClick}
+            onKeyDown={(e) => {
+              if ((e.key === 'Enter' || e.key === ' ') && onInnovationClick) {
+                e.preventDefault()
+                onInnovationClick()
+              }
+            }}
+            className="hover:text-[#A80000] cursor-pointer transition-colors"
+          >
+            innovation
+          </span>
           <span className="hover:text-[#A80000] cursor-pointer transition-colors">collections</span>
         </div>
 
