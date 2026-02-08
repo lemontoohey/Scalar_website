@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-scalar-black-dark text-white font-sans antialiased;
+    @apply bg-black text-white font-sans antialiased;
   }
   h1, h2 {
     @apply font-heading font-black tracking-tight uppercase;
@@ -19,21 +19,18 @@
 
 @layer utilities {
   .glass-effect {
-    @apply bg-black/20 backdrop-blur-md border border-white/10;
+    @apply bg-black/20 backdrop-blur-md border border-white/5;
   }
   
   .glass-card {
-    @apply bg-scalar-black-charcoal/40 backdrop-blur-md border border-white/5 rounded-sm;
+    @apply bg-black/20 backdrop-blur-md border border-white/5 rounded-sm;
   }
   
-  .text-glow {
-    text-shadow: 0 0 20px rgba(168, 0, 0, 0.5);
+  .ghost-border {
+    @apply border border-white/5;
   }
 
-  .blueprint-grid {
-    background-image: 
-      linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    background-size: 40px 40px;
+  .atmospheric-shadow {
+    box-shadow: 0 0 200px rgba(0, 26, 35, 0.3), 0 0 100px rgba(168, 0, 0, 0.1);
   }
 }

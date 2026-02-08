@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import { Archivo, Archivo_Narrow } from 'next/font/google'
+import SmoothScroll from '@/components/SmoothScroll'
 import './globals.css'
 
 const archivo = Archivo({
   subsets: ['latin'],
-  weight: ['400', '600', '900'],
+  weight: ['300', '400', '600', '900'],
   variable: '--font-archivo',
   display: 'swap',
 })
@@ -29,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${archivo.variable} ${archivoNarrow.variable}`}>
-        {children}
+        <SmoothScroll>
+          {children}
+        </SmoothScroll>
       </body>
     </html>
   )

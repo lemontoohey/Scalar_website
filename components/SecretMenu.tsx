@@ -33,7 +33,7 @@ export default function SecretMenu() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section className="py-32 bg-scalar-black-charcoal blueprint-grid">
+    <section className="py-32 bg-black">
       <div className="container mx-auto px-6">
         <motion.div
           ref={ref}

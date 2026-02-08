@@ -34,7 +34,7 @@ export default function Technology() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   return (
-    <section id="technology" className="py-32 bg-scalar-black-charcoal blueprint-grid">
+    <section id="technology" className="py-32 bg-black">
       <div className="container mx-auto px-6">
         <motion.div
           ref={ref}

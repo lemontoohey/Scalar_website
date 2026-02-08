@@ -16,7 +16,10 @@ const config: Config = {
         'scalar-black': {
           DEFAULT: '#000000',
           charcoal: '#1a1a1a',
-          dark: '#0a0a0a',
+          dark: '#000000',
+        },
+        'atmospheric-blue': {
+          DEFAULT: '#001A23',
         },
       },
       fontFamily: {

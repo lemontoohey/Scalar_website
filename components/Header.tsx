@@ -83,7 +83,7 @@ export default function Header() {
         </div>
 
         <motion.button
-          className="px-6 py-2 text-sm font-semibold tracking-wider border border-white/20 glass-effect rounded-sm hover:border-scalar-red hover:text-scalar-red transition-all uppercase"
+          className="px-6 py-2 text-sm font-semibold tracking-wider ghost-border glass-effect rounded-sm hover:border-scalar-red hover:text-scalar-red transition-all uppercase"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

@@ -6,7 +6,7 @@ const partners = ['Oxerra', 'Paintback', 'Siwochem']
 
 export default function Footer() {
   return (
-    <footer className="py-16 bg-scalar-black-dark border-t border-white/10">
+    <footer className="py-16 bg-black ghost-border border-t">
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Partners */}

@@ -15,7 +15,7 @@ export default function Vision() {
   ]
 
   return (
-    <section id="vision" className="py-32 bg-scalar-black-dark blueprint-grid">
+    <section id="vision" className="py-32 bg-black">
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           {/* Text Side */}
