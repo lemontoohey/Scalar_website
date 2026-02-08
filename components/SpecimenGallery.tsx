@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic'
 
 const ClientCanvas = dynamic(() => import('./ClientCanvas'), { ssr: false })
 
+const TECHNICAL_STRINGS = ['RI_1.55', 'BATCH_77', 'TEMP_22K', 'PHASE_ALPHA', 'VISC_0.02']
+
 const specimens = [
   { code: 'PBk27', color: '#000000', name: 'The Bluest Black' },
   { code: 'PR179', color: '#722F37', name: 'Bordeaux Depth' },
@@ -15,26 +17,49 @@ const specimens = [
   { code: 'PR254', color: '#FF0000', name: 'Scalar Red' },
 ]
 
-function SpecimenCard({ 
-  specimen, 
-  onDoubleClick 
-}: { 
-  specimen: typeof specimens[0]
+function SpecimenCard({
+  specimen,
+  onDoubleClick,
+}: {
+  specimen: (typeof specimens)[0]
   onDoubleClick: () => void
 }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [flickerText, setFlickerText] = useState<string | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
-  
-  // Determine text color based on brightness
+  const flickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
   const getBrightness = (hex: string) => {
     const r = parseInt(hex.slice(1, 3), 16)
     const g = parseInt(hex.slice(3, 5), 16)
     const b = parseInt(hex.slice(5, 7), 16)
     return (r * 299 + g * 587 + b * 114) / 1000
   }
-  
   const brightness = getBrightness(specimen.color)
-  const textColor = brightness > 128 ? '#A80000' : '#F5F5DC' // Scalar Red or Parchment White
+  const textColor = brightness > 128 ? '#A80000' : '#F5F5DC'
+
+  const onHoverStart = () => {
+    if (flickerRef.current) clearInterval(flickerRef.current)
+    setFlickerText(TECHNICAL_STRINGS[Math.floor(Math.random() * TECHNICAL_STRINGS.length)])
+    let elapsed = 0
+    flickerRef.current = setInterval(() => {
+      elapsed += 50
+      if (elapsed >= 300) {
+        if (flickerRef.current) clearInterval(flickerRef.current)
+        flickerRef.current = null
+        setFlickerText(null)
+        return
+      }
+      setFlickerText(TECHNICAL_STRINGS[Math.floor(Math.random() * TECHNICAL_STRINGS.length)])
+    }, 50)
+  }
+  const onHoverEnd = () => {
+    if (flickerRef.current) {
+      clearInterval(flickerRef.current)
+      flickerRef.current = null
+    }
+    setFlickerText(null)
+  }
 
   return (
     <motion.div
@@ -45,6 +70,8 @@ function SpecimenCard({
         border: '1px solid rgba(255, 255, 255, 0.1)',
       }}
       onDoubleClick={onDoubleClick}
+      onHoverStart={onHoverStart}
+      onHoverEnd={onHoverEnd}
       onMouseMove={(e) => {
         if (cardRef.current) {
           const rect = cardRef.current.getBoundingClientRect()
@@ -57,30 +84,26 @@ function SpecimenCard({
       whileHover={{ scale: 1.02 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
-      {/* Parallax depth effect */}
       <motion.div
         className="absolute inset-0"
         style={{
           backgroundColor: specimen.color,
           transform: `translateZ(${(mousePos.x - 0.5) * 2}px) translateY(${(mousePos.y - 0.5) * 2}px)`,
         }}
-        animate={{
-          scale: 1.05,
-        }}
+        animate={{ scale: 1.05 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
       />
-      
-      {/* Label */}
       <div className="absolute bottom-4 left-4 right-4 z-10">
         <div
-          className="text-xs font-light tracking-[0.1em] uppercase"
+          className="font-light tracking-[0.1em] uppercase"
           style={{
             fontFamily: 'var(--font-archivo)',
             fontWeight: 300,
             color: textColor,
+            fontSize: flickerText ? '6px' : '12px',
           }}
         >
-          {specimen.code}
+          {flickerText !== null ? flickerText : specimen.code}
         </div>
         <div
           className="text-sm font-light mt-1"

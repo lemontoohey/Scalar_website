@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { playThud } from '@/hooks/useSound'
 
 export default function ProcurementGate() {
   const [isOpen, setIsOpen] = useState(false)
@@ -11,6 +12,11 @@ export default function ProcurementGate() {
     facilityCode: '',
   })
 
+  const openTerminal = () => {
+    playThud()
+    setIsOpen(true)
+  }
+
   return (
     <>
       <motion.button
@@ -19,7 +25,7 @@ export default function ProcurementGate() {
           fontFamily: 'var(--font-archivo)',
           fontWeight: 300,
         }}
-        onClick={() => setIsOpen(true)}
+        onClick={openTerminal}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >

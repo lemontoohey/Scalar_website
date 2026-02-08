@@ -20,6 +20,7 @@ import DebugOverlay from './DebugOverlay'
 import ProductArchitecture from './ProductArchitecture'
 import ProcurementGate from './ProcurementGate'
 import AtmosphericAudio from './AtmosphericAudio'
+import ScanningLine from './ScanningLine'
 
 export default function Hero() {
   const [cureComplete, setCureComplete] = useState(false)
@@ -32,11 +33,29 @@ export default function Hero() {
       <Hallmark />
       <MetadataOverlays />
       <HardwareHandshake />
+      <ScanningLine />
       
       <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
+        {/* Fallback background when 3D fails - always visible, red mist effect */}
+        <div 
+          className="absolute inset-0 z-0 opacity-60"
+          style={{
+            background: 'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(168,0,0,0.4) 0%, transparent 70%)',
+          }}
+          aria-hidden
+        />
         {/* Cure Sequence Background with 3D Text */}
         {typeof window !== 'undefined' && (
-          <ClientCanvas fallback={null}>
+          <ClientCanvas
+            fallback={
+              <div 
+                className="absolute inset-0 z-[1]"
+                style={{
+                  background: 'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(168,0,0,0.35) 0%, transparent 65%)',
+                }}
+              />
+            }
+          >
             <CureSequenceShader onCureComplete={() => setCureComplete(true)} />
             <LensText position={[0, 0.3, 0]} fontSize={2.5}>
               Scalar
@@ -44,7 +63,7 @@ export default function Hero() {
           </ClientCanvas>
         )}
 
-        {/* Hero Text Overlay (for subtitle and fallback) */}
+        {/* Hero Text - always in HTML so it works even when 3D fails */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden pointer-events-none">
           <div 
             className="relative text-center"
@@ -58,8 +77,19 @@ export default function Hero() {
               transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-4"
             >
-              {/* 3D text renders "Scalar" via LensText above */}
-              <div className="h-32 md:h-40" /> {/* Spacer for 3D text */}
+              <h1
+                className="text-7xl md:text-9xl font-light tracking-[0.4em] mix-blend-screen"
+                style={{
+                  fontFamily: 'var(--font-archivo)',
+                  fontWeight: 300,
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  filter: 'drop-shadow(0 0 20px rgba(168, 0, 0, 0.3))',
+                  textShadow: '0 0 40px rgba(168, 0, 0, 0.2)',
+                }}
+              >
+                Scalar
+              </h1>
               <motion.p
                 className="text-lg md:text-xl font-light tracking-[0.6em] lowercase mix-blend-screen"
                 style={{ 
@@ -77,7 +107,7 @@ export default function Hero() {
             </motion.div>
           </div>
         </section>
-        
+
         <ProductArchitecture />
         <SpecimenGallery />
         <ProcurementGate />

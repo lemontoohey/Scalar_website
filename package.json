@@ -3,23 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H localhost",
+    "dev": "next dev -H localhost -p 3002",
+    "dev:safe": "ulimit -n 10240 2>/dev/null; next dev -H 127.0.0.1 -p 3002",
     "build": "next build",
     "export": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@react-three/drei": "^9.114.3",
-    "@react-three/fiber": "^8.17.10",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "clsx": "^2.1.1",
-    "framer-motion": "^11.3.19",
+    "framer-motion": "^10.16.4",
     "lenis": "^1.1.7",
     "next": "^16.1.6",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "tailwind-merge": "^2.4.0",
-    "three": "^0.169.0"
+    "three": "^0.182.0"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -29,5 +30,10 @@
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "react-reconciler": "0.31.0"
   }
 }

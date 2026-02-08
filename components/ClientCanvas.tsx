@@ -1,51 +1,43 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
+import { useState, Suspense, useLayoutEffect } from 'react'
+import { Canvas } from '@react-three/fiber'
 import ErrorBoundary from './ErrorBoundary'
 
-// Only import Canvas after React is fully loaded
-const Canvas = dynamic(
-  () => import('@react-three/fiber').then((mod) => mod.Canvas),
-  { 
-    ssr: false,
-    loading: () => null
-  }
-)
-
-export default function ClientCanvas({ 
+function ClientCanvas({
   children,
-  fallback 
-}: { 
+  fallback,
+}: {
   children: React.ReactNode
   fallback?: React.ReactNode
 }) {
-  const [isMounted, setIsMounted] = useState(false)
+  const [shouldRender, setShouldRender] = useState(false)
 
-  useEffect(() => {
-    setIsMounted(true)
+  // useLayoutEffect ensures we are truly on the client before the first paint hits the WebGL context
+  useLayoutEffect(() => {
+    setShouldRender(true)
   }, [])
 
-  if (!isMounted) {
-    return <div className="absolute inset-0 bg-[#000502]" />
+  if (!shouldRender) {
+    return <div className="fixed inset-0 bg-[#000502]" />
   }
 
   return (
-    <ErrorBoundary fallback={fallback}>
-      <Suspense fallback={fallback}>
-        <Canvas
-          className="absolute inset-0"
-          style={{ zIndex: 1 }}
-          gl={{ 
-            alpha: true, 
-            antialias: true,
-            powerPreference: 'high-performance',
-            failIfMajorPerformanceCaveat: false
-          }}
-        >
-          {children}
-        </Canvas>
-      </Suspense>
+    <ErrorBoundary fallback={fallback ?? <div className="fixed inset-0 bg-[#000502]" />}>
+      <div className="fixed inset-0 pointer-events-none z-0" data-red-mist>
+        <Suspense fallback={fallback ?? null}>
+          <Canvas
+            flat
+            dpr={[1, 2]}
+            gl={{ antialias: true, alpha: true, stencil: false, depth: true }}
+            camera={{ position: [0, 0, 5], fov: 45 }}
+          >
+            {children}
+          </Canvas>
+        </Suspense>
+      </div>
     </ErrorBoundary>
   )
 }
+
+export default ClientCanvas

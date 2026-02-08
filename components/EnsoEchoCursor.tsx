@@ -3,12 +3,9 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 
-// Kelvin to RGB conversion
 function kelvinToRGB(kelvin: number): string {
   const temp = kelvin / 100
-  
   let red, green, blue
-  
   if (temp <= 66) {
     red = 255
     green = temp
@@ -20,51 +17,27 @@ function kelvinToRGB(kelvin: number): string {
     red = 329.698727446 * Math.pow(red, -0.1332047592)
     if (red < 0) red = 0
     if (red > 255) red = 255
-    
     green = temp - 60
     green = 288.1221695283 * Math.pow(green, -0.0755148492)
     if (green < 0) green = 0
     if (green > 255) green = 255
   }
-  
-  if (temp <= 19) {
-    blue = 0
-  } else if (temp < 66) {
+  if (temp <= 19) blue = 0
+  else if (temp < 66) {
     blue = temp - 10
     blue = 138.5177312231 * Math.log(blue) - 305.0447927307
     if (blue < 0) blue = 0
     if (blue > 255) blue = 255
-  } else {
-    blue = 255
-  }
-  
+  } else blue = 255
   return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)})`
-}
-
-// Glass-on-glass click sound
-function playGlassClick() {
-  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-  const oscillator = audioContext.createOscillator()
-  const gainNode = audioContext.createGain()
-  
-  oscillator.connect(gainNode)
-  gainNode.connect(audioContext.destination)
-  
-  oscillator.frequency.setValueAtTime(8000, audioContext.currentTime) // High frequency
-  oscillator.frequency.exponentialRampToValueAtTime(12000, audioContext.currentTime + 0.01)
-  
-  gainNode.gain.setValueAtTime(0.1, audioContext.currentTime)
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05)
-  
-  oscillator.start(audioContext.currentTime)
-  oscillator.stop(audioContext.currentTime + 0.05)
 }
 
 export default function EnsoEchoCursor() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
-  const [kelvin, setKelvin] = useState(6500) // Start at blue-white
+  const [kelvin, setKelvin] = useState(6500)
   const [mounted, setMounted] = useState(false)
+  const [overRedMist, setOverRedMist] = useState(false)
   const soundPlayedRef = useRef(false)
 
   useEffect(() => {
@@ -74,6 +47,8 @@ export default function EnsoEchoCursor() {
 
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
+      const el = document.elementFromPoint(e.clientX, e.clientY)
+      setOverRedMist(!!el?.closest('[data-red-mist]'))
     }
 
     const handleMouseEnter = (e: MouseEvent) => {
@@ -82,15 +57,6 @@ export default function EnsoEchoCursor() {
         if (!isHovering) {
           setIsHovering(true)
           soundPlayedRef.current = false
-          
-          // Play sound on morph
-          try {
-            playGlassClick()
-            soundPlayedRef.current = true
-          } catch (e) {
-            console.warn('Audio context failed:', e)
-          }
-          
           // Rapid Kelvin shift: 6500K -> 4000K -> 2000K -> Scalar Red
           const startKelvin = 6500
           const endKelvin = 2000
@@ -159,9 +125,7 @@ export default function EnsoEchoCursor() {
 
   const color = isHovering ? '#A80000' : kelvinToRGB(kelvin)
 
-  if (!mounted) {
-    return null
-  }
+  if (!mounted) return null
 
   return (
     <motion.div
@@ -170,14 +134,14 @@ export default function EnsoEchoCursor() {
         left: mousePosition.x,
         top: mousePosition.y,
         transform: 'translate(-50%, -50%)',
+        mixBlendMode: overRedMist ? 'difference' : 'normal',
       }}
-      animate={{
-        scale: isHovering ? 1 : 1,
-      }}
+      animate={{ scale: 1 }}
       transition={{
         type: 'spring',
         stiffness: 250,
         damping: 20,
+        mass: 1.5,
       }}
     >
       {isHovering ? (
@@ -192,6 +156,7 @@ export default function EnsoEchoCursor() {
             type: 'spring',
             stiffness: 250,
             damping: 20,
+            mass: 1.5,
             duration: 0.3,
           }}
         >
