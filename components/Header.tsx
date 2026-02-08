@@ -58,32 +58,32 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-8">
           <Link
             href="#vision"
-            className="text-sm font-body tracking-tight hover:text-scalar-red transition-colors"
+            className="text-sm font-light tracking-wide hover:text-scalar-red transition-colors uppercase"
           >
             Vision
           </Link>
           <Link
             href="#technology"
-            className="text-sm font-body tracking-tight hover:text-scalar-red transition-colors"
+            className="text-sm font-light tracking-wide hover:text-scalar-red transition-colors uppercase"
           >
             Technology
           </Link>
           <Link
             href="#collection"
-            className="text-sm font-body tracking-tight hover:text-scalar-red transition-colors"
+            className="text-sm font-light tracking-wide hover:text-scalar-red transition-colors uppercase"
           >
             The Collection
           </Link>
           <Link
             href="#team"
-            className="text-sm font-body tracking-tight hover:text-scalar-red transition-colors"
+            className="text-sm font-light tracking-wide hover:text-scalar-red transition-colors uppercase"
           >
             Team
           </Link>
         </div>
 
         <motion.button
-          className="px-6 py-2 text-sm font-body tracking-tight border border-white/20 glass-effect rounded-sm hover:border-scalar-red hover:text-scalar-red transition-all"
+          className="px-6 py-2 text-sm font-semibold tracking-wider border border-white/20 glass-effect rounded-sm hover:border-scalar-red hover:text-scalar-red transition-all uppercase"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

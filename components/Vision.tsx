@@ -25,10 +25,10 @@ export default function Vision() {
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-5xl md:text-6xl font-heading font-bold mb-8">
-              The Vision
+            <h2 className="text-5xl md:text-6xl font-extrabold tracking-wide uppercase mb-8">
+              THE VISION
             </h2>
-            <p className="text-xl font-body tracking-tight text-white/70 mb-8 leading-relaxed">
+            <p className="text-xl font-light text-white/70 mb-8 leading-relaxed">
               Moving away from romanticized craft toward a clinical, physics-based identity.
             </p>
             
@@ -43,10 +43,10 @@ export default function Vision() {
                   transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
                 >
                   <div className="flex justify-between items-baseline">
-                    <span className="text-sm font-mono tracking-wider text-white/60 uppercase">
+                    <span className="text-sm font-light tracking-wide text-white/60 uppercase">
                       {spec.label}
                     </span>
-                    <span className="text-2xl font-mono font-bold text-scalar-red">
+                    <span className="text-2xl font-extrabold tracking-wide text-scalar-red">
                       {spec.value}
                     </span>
                   </div>
@@ -63,7 +63,7 @@ export default function Vision() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-scalar-red/20 via-transparent to-scalar-red/10 flex items-center justify-center">
-              <p className="text-white/30 font-mono text-sm tracking-wider uppercase">
+              <p className="text-white/30 font-light text-sm tracking-wide uppercase">
                 Macro Photography<br />Pigment Detail
               </p>
             </div>

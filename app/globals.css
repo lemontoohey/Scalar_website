@@ -4,11 +4,13 @@
 
 @layer base {
   body {
-    @apply bg-scalar-black-dark text-white font-body antialiased;
-    letter-spacing: 0.01em;
+    @apply bg-scalar-black-dark text-white font-sans antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
+    @apply font-heading font-extrabold tracking-wide;
+  }
+  p, li {
+    @apply font-light leading-relaxed;
   }
 }
 

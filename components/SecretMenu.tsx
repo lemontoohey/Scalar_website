@@ -42,10 +42,10 @@ export default function SecretMenu() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-heading font-bold mb-4">
-            The Secret Menu
+          <h2 className="text-5xl md:text-6xl font-extrabold tracking-wide uppercase mb-4">
+            THE SECRET MENU
           </h2>
-          <p className="text-lg font-body tracking-tight text-white/60">
+          <p className="text-lg font-light text-white/60 leading-relaxed">
             High-Tech Filters
           </p>
         </motion.div>
@@ -60,13 +60,13 @@ export default function SecretMenu() {
             >
               <GlassCard className="h-full text-center">
                 <div className="space-y-4">
-                  <div className="text-xs font-mono tracking-wider text-white/40 uppercase mb-2">
+                  <div className="text-xs font-light tracking-wide text-white/40 uppercase mb-2">
                     {pigment.code}
                   </div>
-                  <h3 className="text-xl font-mono font-bold text-scalar-red mb-2">
+                  <h3 className="text-xl font-extrabold tracking-wide text-scalar-red mb-2">
                     {pigment.name}
                   </h3>
-                  <p className="text-sm font-body tracking-tight text-white/60 italic">
+                  <p className="text-sm font-light text-white/60 italic leading-relaxed">
                     {pigment.description}
                   </p>
                 </div>
