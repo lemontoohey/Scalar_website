@@ -16,9 +16,9 @@ const Canvas = dynamic(
   }
 )
 
-const FluidCureShader = dynamic(
+const SafeFluidCureShader = dynamic(
   async () => {
-    const mod = await import('./FluidCureShader')
+    const mod = await import('./SafeFluidCureShader')
     return { default: mod.default }
   },
   { 
@@ -123,9 +123,7 @@ export default function OpticalEngine({
                 setUseShader(false)
               }}
             >
-              <ErrorBoundary fallback={null}>
-                <FluidCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
-              </ErrorBoundary>
+              <SafeFluidCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
             </Canvas>
           </Suspense>
         </ErrorBoundary>

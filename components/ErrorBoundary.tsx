@@ -5,6 +5,7 @@ import { Component, ReactNode } from 'react'
 interface Props {
   children: ReactNode
   fallback?: ReactNode
+  onError?: (error: Error) => void
 }
 
 interface State {
@@ -22,7 +23,22 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    // Log detailed error information
+    const errorDetails = {
+      message: error?.message || 'Unknown error',
+      name: error?.name || 'Error',
+      stack: error?.stack || 'No stack trace',
+      componentStack: errorInfo?.componentStack || 'No component stack',
+      errorString: String(error),
+      errorKeys: error ? Object.keys(error) : [],
+    }
+    console.error('ErrorBoundary caught an error:', errorDetails)
+    
+    // Call optional error callback
+    if (this.props.onError) {
+      this.props.onError(error)
+    }
+    
     // Don't re-throw, just log and show fallback
   }
 

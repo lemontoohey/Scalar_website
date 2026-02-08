@@ -187,7 +187,15 @@ export default function FluidCureShader({
   const [shaderError, setShaderError] = useState<string | null>(null)
   
   // Get Three.js context - must be inside Canvas
-  const { viewport, size } = useThree()
+  let viewport, size
+  try {
+    const three = useThree()
+    viewport = three.viewport
+    size = three.size
+  } catch (error) {
+    console.error('useThree() failed - component must be inside Canvas:', error)
+    return null
+  }
   
   // Load texture with TextureLoader and error handling
   useEffect(() => {
