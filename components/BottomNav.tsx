@@ -14,7 +14,7 @@ export default function BottomNav({ visible }: { visible: boolean }) {
 
   return (
     <motion.nav
-      className="fixed bottom-0 left-0 right-0 z-50"
+      className="fixed bottom-0 left-0 right-0 z-[100]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1, delay: 1, ease: [0.16, 1, 0.3, 1] }}

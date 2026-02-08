@@ -106,8 +106,8 @@ export default function OpticalEngine({
 
   return (
     <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
-      <ErrorBoundary fallback={<FallbackBackground />}>
-        {mounted && useShader ? (
+      {mounted && useShader ? (
+        <ErrorBoundary fallback={<FallbackBackground />}>
           <Suspense fallback={<FallbackBackground />}>
             <Canvas
               className="absolute inset-0"
@@ -123,13 +123,15 @@ export default function OpticalEngine({
                 setUseShader(false)
               }}
             >
-              <FluidCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
+              <ErrorBoundary fallback={null}>
+                <FluidCureShader logoPath="/logo.png" mouse={mouse} onCureComplete={onCureComplete} />
+              </ErrorBoundary>
             </Canvas>
           </Suspense>
-        ) : (
-          <FallbackBackground />
-        )}
-      </ErrorBoundary>
+        </ErrorBoundary>
+      ) : (
+        <FallbackBackground />
+      )}
       
       <div className="relative" style={{ zIndex: 50, pointerEvents: 'none' }}>
         <div style={{ pointerEvents: 'auto' }}>

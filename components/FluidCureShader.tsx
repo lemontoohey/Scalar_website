@@ -180,11 +180,14 @@ export default function FluidCureShader({
   onCureComplete?: () => void
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const { viewport, size } = useThree()
   const [cure, setCure] = useState(0)
   const [cureStarted, setCureStarted] = useState(false)
   const [logoTexture, setLogoTexture] = useState<THREE.Texture | null>(null)
   const [textureError, setTextureError] = useState<string | null>(null)
+  const [shaderError, setShaderError] = useState<string | null>(null)
+  
+  // Get Three.js context - must be inside Canvas
+  const { viewport, size } = useThree()
   
   // Load texture with TextureLoader and error handling
   useEffect(() => {
@@ -282,15 +285,27 @@ export default function FluidCureShader({
     return null
   }
 
-  return (
-    <mesh ref={meshRef} position={[0, 0, 0]}>
-      <planeGeometry args={[viewport.width, viewport.height, 128, 128]} />
-      <shaderMaterial
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
-        transparent={true}
-      />
-    </mesh>
-  )
+  if (shaderError) {
+    console.error('Shader error:', shaderError)
+    return null
+  }
+
+  try {
+    return (
+      <mesh ref={meshRef} position={[0, 0, 0]}>
+        <planeGeometry args={[viewport.width, viewport.height, 128, 128]} />
+        <shaderMaterial
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShader}
+          uniforms={uniforms}
+          transparent={true}
+        />
+      </mesh>
+    )
+  } catch (error) {
+    const errorMsg = `Failed to create shader: ${error}`
+    console.error(errorMsg)
+    setShaderError(errorMsg)
+    return null
+  }
 }

@@ -7,7 +7,7 @@ export default function DiagnosticMetadata({ visible }: { visible: boolean }) {
     <>
       {/* SPEC_01 // RI: 1.554 - Above left edge of Hero, aligned with Scalar text */}
       <motion.div
-        className="fixed z-50"
+        className="fixed z-[100]"
         style={{
           left: 'calc(50% - 5vw - 200px)', // Left of shifted hero, aligned with Scalar text
           top: 'calc(50% - 3vh - 150px)', // Above hero
@@ -29,7 +29,7 @@ export default function DiagnosticMetadata({ visible }: { visible: boolean }) {
 
       {/* STATUS: OPTICAL_EQUILIBRIUM - Top right */}
       <motion.div
-        className="fixed top-8 right-8 z-50"
+        className="fixed top-8 right-8 z-[100]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.3 }}
         transition={{ duration: 1, delay: 1 }}
