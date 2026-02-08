@@ -6,7 +6,10 @@ import { motion } from 'framer-motion'
 import ErrorBoundary from './ErrorBoundary'
 
 const Canvas = dynamic(
-  () => import('@react-three/fiber').then((mod) => mod.Canvas),
+  async () => {
+    const mod = await import('@react-three/fiber')
+    return { default: mod.Canvas }
+  },
   { 
     ssr: false,
     loading: () => null
@@ -14,7 +17,10 @@ const Canvas = dynamic(
 )
 
 const FluidCureShader = dynamic(
-  () => import('./FluidCureShader'),
+  async () => {
+    const mod = await import('./FluidCureShader')
+    return { default: mod.default }
+  },
   { 
     ssr: false,
     loading: () => null
@@ -83,6 +89,20 @@ export default function OpticalEngine({
       window.removeEventListener('touchmove', handleTouchMove)
     }
   }, [])
+
+  // Only render Canvas on client side after mount
+  if (typeof window === 'undefined') {
+    return (
+      <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
+        <FallbackBackground />
+        <div className="relative" style={{ zIndex: 50, pointerEvents: 'none' }}>
+          <div style={{ pointerEvents: 'auto' }}>
+            {children}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>

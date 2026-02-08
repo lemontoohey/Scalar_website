@@ -45,15 +45,19 @@ export default function EnsoEchoCursor() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
   const [kelvin, setKelvin] = useState(6500) // Start at blue-white
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    if (typeof window === 'undefined') return
+
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY })
     }
 
     const handleMouseEnter = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (target.tagName === 'A' || target.tagName === 'BUTTON' || target.closest('a, button')) {
+      if (target && (target.tagName === 'A' || target.tagName === 'BUTTON' || target.closest('a, button'))) {
         setIsHovering(true)
         // Rapid Kelvin shift: 6500K → 2000K → Scalar Red
         const startKelvin = 6500
@@ -93,17 +97,25 @@ export default function EnsoEchoCursor() {
     document.addEventListener('mouseout', handleMouseLeave)
 
     // Hide default cursor
-    document.body.style.cursor = 'none'
+    if (document.body) {
+      document.body.style.cursor = 'none'
+    }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseover', handleMouseEnter)
       document.removeEventListener('mouseout', handleMouseLeave)
-      document.body.style.cursor = 'auto'
+      if (document.body) {
+        document.body.style.cursor = 'auto'
+      }
     }
   }, [])
 
   const color = isHovering ? '#A80000' : kelvinToRGB(kelvin)
+
+  if (!mounted) {
+    return null
+  }
 
   return (
     <motion.div
