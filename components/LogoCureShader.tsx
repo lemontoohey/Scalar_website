@@ -111,42 +111,55 @@ const fragmentShader = `
     // Fluid displacement
     vec2 displacedUv = fluidDisplacement(uv, uMouse, uTime);
     
-    // Center and scale logo (logo should be centered and take up reasonable portion of screen)
-    vec2 logoUv = (displacedUv - center) * 0.5 + center;
+    // Center and scale logo - make it larger and more visible
+    float logoScale = 0.7; // Logo takes up 70% of screen
+    vec2 logoUv = (displacedUv - center) / logoScale + center;
     
-    // Sample logo
-    vec4 logoColor = texture2D(uLogo, logoUv);
+    // Sample logo - clamp to prevent edge artifacts
+    vec4 logoColor = texture2D(uLogo, clamp(logoUv, 0.0, 1.0));
+    
+    // Check if we're within logo bounds
+    float inLogoBounds = step(0.0, logoUv.x) * step(logoUv.x, 1.0) * step(0.0, logoUv.y) * step(logoUv.y, 1.0);
     
     // Entropic mist effect (when sharpness is low)
     float mist = fractalNoise(logoUv * 10.0 + uTime * 0.1);
     mist = pow(mist, 2.0);
     
     // Gaussian blur based on sharpness
-    float blurAmount = (1.0 - uSharpness) * 0.02;
-    vec3 blurredLogo = blurAmount > 0.0 ? gaussianBlur(uLogo, logoUv, blurAmount) : logoColor.rgb;
+    float blurAmount = (1.0 - uSharpness) * 0.03;
+    vec3 blurredLogo = blurAmount > 0.001 ? gaussianBlur(uLogo, clamp(logoUv, 0.0, 1.0), blurAmount) : logoColor.rgb;
     
     // Mix between mist and sharp logo
     vec3 logo = mix(
-      blurredLogo * (0.3 + mist * 0.7), // Entropic mist
+      blurredLogo * (0.4 + mist * 0.6), // Entropic mist - more visible
       logoColor.rgb, // Sharp logo
       uSharpness
     );
     
-    // Volumetric bloom behind logo
+    // Volumetric bloom behind logo - always visible
     float distFromCenter = length(uv - center);
-    float bloom = exp(-distFromCenter * 3.0) * uBloomIntensity;
+    float bloom = exp(-distFromCenter * 2.5) * uBloomIntensity;
     vec3 scalarRed = vec3(0.658, 0.0, 0.0);
-    vec3 bloomColor = scalarRed * bloom * (1.0 - logoColor.a);
+    
+    // Bloom should show behind logo, not be masked by it
+    vec3 bloomColor = scalarRed * bloom;
     
     // Chromatic aberration on bloom edges
     vec2 bloomDir = normalize(uv - center);
-    vec3 bloomWithCA = chromaticAberration(uLogo, logoUv, bloomDir, bloom * 5.0);
-    bloomColor = mix(bloomColor, bloomWithCA * scalarRed, 0.3);
+    vec3 bloomWithCA = vec3(
+      bloom * (1.0 + bloomDir.x * 0.1),
+      bloom,
+      bloom * (1.0 - bloomDir.x * 0.1)
+    );
+    bloomColor = mix(bloomColor, bloomWithCA * scalarRed, 0.4);
     
-    // Combine logo and bloom
-    vec3 finalColor = logo * logoColor.a + bloomColor;
+    // Combine logo and bloom - logo on top, bloom behind
+    vec3 finalColor = bloomColor + logo * logoColor.a;
     
-    gl_FragColor = vec4(finalColor, max(logoColor.a, bloom * 0.5));
+    // Ensure we have some alpha for transparency
+    float alpha = max(logoColor.a * inLogoBounds, bloom * 0.3);
+    
+    gl_FragColor = vec4(finalColor, alpha);
   }
 `
 
@@ -165,50 +178,72 @@ export default function LogoCureShader({
   const [bloomIntensity, setBloomIntensity] = useState(1.5)
   const [cureStarted, setCureStarted] = useState(false)
   
-  const logoTexture = useTexture(logoPath)
+  const logoTexture = useTexture(logoPath, (texture) => {
+    // Configure texture properly
+    texture.flipY = false
+    texture.wrapS = THREE.ClampToEdgeWrapping
+    texture.wrapT = THREE.ClampToEdgeWrapping
+    texture.minFilter = THREE.LinearFilter
+    texture.magFilter = THREE.LinearFilter
+  })
   
   const uniforms = useMemo(
-    () => ({
-      uLogo: { value: logoTexture },
-      uSharpness: { value: 0 },
-      uTime: { value: 0 },
-      uMouse: { value: [0.5, 0.5] },
-      uResolution: { value: [size.width, size.height] },
-      uBloomIntensity: { value: 1.5 },
-    }),
+    () => {
+      if (!logoTexture) {
+        return null
+      }
+      return {
+        uLogo: { value: logoTexture },
+        uSharpness: { value: 0 },
+        uTime: { value: 0 },
+        uMouse: { value: [0.5, 0.5] },
+        uResolution: { value: [size.width, size.height] },
+        uBloomIntensity: { value: 2.0 },
+      }
+    },
     [logoTexture, size.width, size.height]
   )
+  
+  // Don't render if texture isn't loaded or uniforms aren't ready
+  if (!logoTexture || !uniforms) {
+    return null
+  }
 
   // Start cure sequence when texture is loaded
   useEffect(() => {
-    if (logoTexture && !cureStarted) {
+    if (logoTexture && uniforms && !cureStarted) {
+      console.log('Logo texture loaded, starting cure sequence')
       setCureStarted(true)
       
-      // Cure animation: 0 to 1 over 3 seconds
-      const startTime = Date.now()
-      const duration = 3000
-      
-      const animate = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
+      // Small delay to ensure texture is fully ready
+      setTimeout(() => {
+        // Cure animation: 0 to 1 over 3 seconds
+        const startTime = Date.now()
+        const duration = 3000
         
-        // Easing: ease-out cubic
-        const eased = 1 - Math.pow(1 - progress, 3)
-        setSharpness(eased)
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate)
-        } else {
-          onCureComplete?.()
+        const animate = () => {
+          const elapsed = Date.now() - startTime
+          const progress = Math.min(elapsed / duration, 1)
+          
+          // Easing: ease-out cubic
+          const eased = 1 - Math.pow(1 - progress, 3)
+          setSharpness(eased)
+          
+          if (progress < 1) {
+            requestAnimationFrame(animate)
+          } else {
+            console.log('Cure sequence complete')
+            onCureComplete?.()
+          }
         }
-      }
-      
-      requestAnimationFrame(animate)
+        
+        requestAnimationFrame(animate)
+      }, 100)
     }
-  }, [logoTexture, cureStarted, onCureComplete])
+  }, [logoTexture, uniforms, cureStarted, onCureComplete])
 
   useFrame((state) => {
-    if (meshRef.current) {
+    if (meshRef.current && uniforms) {
       const material = meshRef.current.material as THREE.ShaderMaterial
       if (material && material.uniforms) {
         material.uniforms.uTime.value = state.clock.elapsedTime
@@ -218,6 +253,10 @@ export default function LogoCureShader({
       }
     }
   })
+
+  if (!uniforms) {
+    return null
+  }
 
   return (
     <mesh ref={meshRef} position={[0, 0, 0]}>
