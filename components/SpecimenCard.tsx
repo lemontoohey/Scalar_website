@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Specimen } from '@/constants/specimens'
-import { useSound } from '@/hooks/useSound'
+import { playThud } from '@/hooks/useSound'
 
 function LightRipple({
   mousePos,
@@ -14,16 +14,18 @@ function LightRipple({
 }) {
   return (
     <motion.div
-      className="absolute rounded-full pointer-events-none w-[120px] h-[120px]"
+      className="absolute rounded-full pointer-events-none"
       style={{
+        width: '200px',
+        height: '200px',
         left: `${mousePos.x * 100}%`,
         top: `${mousePos.y * 100}%`,
         transform: 'translate(-50%, -50%)',
-        background: `radial-gradient(circle, ${color}30 0%, ${color}00 70%)`,
+        background: `radial-gradient(circle, ${color}40 0%, ${color}00 60%)`,
       }}
       initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 3, opacity: [0.6, 0] }}
-      transition={{ duration: 0.7, ease: 'easeOut' }}
+      animate={{ scale: 2.5, opacity: [0.7, 0] }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
     />
   )
 }
@@ -37,7 +39,6 @@ export default function SpecimenCard({
   onInitiateProcurement: (name: string) => void
   onViewSpecimen: (specimen: Specimen) => void
 }) {
-  const { playThud } = useSound()
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
   const [isHovering, setIsHovering] = useState(false)
 

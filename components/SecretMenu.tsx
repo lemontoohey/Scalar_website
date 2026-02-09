@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
-import GlassCard from './GlassCard'
+import { cn } from '@/lib/utils'
 
 const pigments = [
   {
@@ -58,7 +58,11 @@ export default function SecretMenu() {
               animate={isInView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.4, delay: index * 0.1 }}
             >
-              <GlassCard className="h-full text-center">
+              <motion.div
+                className={cn('glass-card p-6 h-full text-center transition-all duration-300 hover:bg-scalar-black-charcoal/60 hover:border-white/20')}
+                whileHover={{ scale: 1.02, y: -4 }}
+                transition={{ duration: 0.2 }}
+              >
                 <div className="space-y-4">
                   <div className="text-xs font-narrow tracking-wider text-white/40 uppercase mb-2">
                     {pigment.code}
@@ -70,7 +74,7 @@ export default function SecretMenu() {
                     {pigment.description}
                   </p>
                 </div>
-              </GlassCard>
+              </motion.div>
             </motion.div>
           ))}
         </div>

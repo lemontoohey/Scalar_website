@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useMemo, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const DURATION_MS = 3700
@@ -23,11 +23,6 @@ const fragmentShader = `
   uniform float uSpeed;
   
   varying vec2 vUv;
-  
-  const vec3 uColorDark = vec3(0.0, 0.02, 0.008);
-  const vec3 uColorEdgeRed = vec3(0.42, 0.0, 0.0);
-  const vec3 uColorCoreRed = vec3(0.52, 0.0, 0.0);
-  const vec3 uColorPeak = vec3(1.0, 0.988, 0.91);
   
   float noise(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -59,13 +54,15 @@ const fragmentShader = `
     float tex = fbm(vUv * 1.5 + uTime * uSpeed);
     float mass = singularity * (0.8 + 0.2 * tex);
     
-    float rise = smoothstep(0.0, 0.5, uProgress);
-    float fall = smoothstep(0.5, 1.0, uProgress);
-    vec3 coreColor = mix(uColorDark, uColorPeak, rise);
-    coreColor = mix(coreColor, uColorCoreRed, fall);
-    vec3 finalColor = mix(uColorEdgeRed, coreColor, mass);
+    const vec3 uColorRest = vec3(0.27, 0.0, 0.0);
+    const vec3 uColorPeak = vec3(1.0, 0.988, 0.91);
     
-    float alpha = mass;
+    float ignitionHeat = smoothstep(0.0, 0.5, uProgress) * (1.0 - smoothstep(0.5, 1.0, uProgress));
+    vec3 hotCoreColor = mix(uColorRest, uColorPeak, ignitionHeat);
+    vec3 finalColor = mix(uColorRest, hotCoreColor, mass);
+    
+    float recession = 1.0 - smoothstep(0.5, 1.0, uProgress);
+    float alpha = mass * (0.4 + 0.6 * recession);
     
     gl_FragColor = vec4(finalColor, alpha);
   }
@@ -85,9 +82,12 @@ export default function CureSequenceShader({
   onCureComplete?: () => void
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
+  const { viewport } = useThree()
   const [progress, setProgress] = useState(0)
   const startTimeRef = useRef<number | null>(null)
   const cureCompleteFired = useRef(false)
+  const planeWidth = viewport.width * 0.8
+  const planeHeight = viewport.height * 0.8
 
   const uniforms = useMemo(
     () => ({
@@ -135,7 +135,7 @@ export default function CureSequenceShader({
 
   return (
     <mesh ref={meshRef} position={[0, 0, -1]}>
-      <planeGeometry args={[10, 5, 64, 64]} />
+      <planeGeometry args={[planeWidth, planeHeight, 64, 64]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}

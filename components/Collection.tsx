@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
-import GlassCard from './GlassCard'
+import { cn } from '@/lib/utils'
 
 const collections = [
   {
@@ -58,7 +58,11 @@ export default function Collection() {
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.4, delay: categoryIndex * 0.15 }}
             >
-              <GlassCard className="h-full">
+              <motion.div
+                className={cn('glass-card p-6 h-full transition-all duration-300 hover:bg-scalar-black-charcoal/60 hover:border-white/20')}
+                whileHover={{ scale: 1.02, y: -4 }}
+                transition={{ duration: 0.2 }}
+              >
                 <div className="space-y-6">
                   <h3 className="text-2xl font-semibold tracking-normal border-b border-white/10 pb-3">
                     {collection.category}
@@ -89,7 +93,7 @@ export default function Collection() {
                     ))}
                   </div>
                 </div>
-              </GlassCard>
+              </motion.div>
             </motion.div>
           ))}
         </div>

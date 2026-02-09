@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
-import GlassCard from './GlassCard'
+import { cn } from '@/lib/utils'
 
 const stages = [
   {
@@ -61,7 +61,11 @@ export default function Technology() {
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <GlassCard className="h-full">
+              <motion.div
+                className={cn('glass-card p-6 h-full transition-all duration-300 hover:bg-scalar-black-charcoal/60 hover:border-white/20')}
+                whileHover={{ scale: 1.02, y: -4 }}
+                transition={{ duration: 0.2 }}
+              >
                 <div className="space-y-4">
                   <div className="text-xs font-narrow tracking-wider text-white/40 uppercase">
                     {stage.title}
@@ -81,7 +85,7 @@ export default function Technology() {
                     {stage.description}
                   </motion.p>
                 </div>
-              </GlassCard>
+              </motion.div>
             </motion.div>
           ))}
         </div>

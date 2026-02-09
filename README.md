@@ -49,7 +49,7 @@ npm run dev
 │   ├── Collection.tsx  # Product collection
 │   ├── SecretMenu.tsx  # Secret menu pigments
 │   ├── Footer.tsx      # Footer
-│   └── GlassCard.tsx   # Reusable glass card component
+│   └── (glass cards inlined in SecretMenu, Collection, Technology)
 └── lib/
     └── utils.ts        # Utility functions (cn helper)
 ```

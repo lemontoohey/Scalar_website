@@ -26,7 +26,7 @@ export default function SpecimenGrid({
       <div className="container mx-auto px-6">
         <div
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto"
-          style={{ perspective: '1000px' }}
+          style={{ perspective: '1200px' }}
         >
           {filtered.map((specimen) => (
             <SpecimenCard
