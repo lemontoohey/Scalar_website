@@ -3,6 +3,15 @@
 @tailwind utilities;
 
 @layer base {
+  @media (hover: hover) and (pointer: fine) {
+    body,
+    a,
+    button,
+    input,
+    [role='button'] {
+      cursor: none !important;
+    }
+  }
   body {
     @apply text-white font-sans antialiased;
     background-color: #000502;

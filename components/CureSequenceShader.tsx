@@ -1,8 +1,10 @@
 'use client'
 
-import { useRef, useMemo, useState, useEffect } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useRef, useMemo, useState } from 'react'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+
+const DURATION_MS = 3700
 
 const vertexShader = `
   varying vec2 vUv;
@@ -16,13 +18,16 @@ const vertexShader = `
 `
 
 const fragmentShader = `
-  uniform float uCure;
+  uniform float uProgress;
   uniform float uTime;
   uniform float uSpeed;
-  uniform float uCurlStrength;
   
   varying vec2 vUv;
-  varying vec3 vPosition;
+  
+  const vec3 uColorDark = vec3(0.0, 0.02, 0.008);
+  const vec3 uColorEdgeRed = vec3(0.42, 0.0, 0.0);
+  const vec3 uColorCoreRed = vec3(0.52, 0.0, 0.0);
+  const vec3 uColorPeak = vec3(1.0, 0.988, 0.91);
   
   float noise(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -39,102 +44,98 @@ const fragmentShader = `
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
   }
   
-  float curlNoise(vec2 p, float time) {
-    float n1 = smoothNoise(p + vec2(time * uSpeed, 0.0));
-    float n2 = smoothNoise(p + vec2(0.0, time * uSpeed));
-    vec2 curl = vec2(n2 - n1, n1 - n2) * uCurlStrength;
-    return length(curl);
+  float fbm(vec2 p) {
+    float f = smoothNoise(p);
+    f += 0.5 * smoothNoise(p * 2.0);
+    f += 0.25 * smoothNoise(p * 4.0);
+    return f / 1.75;
   }
   
   void main() {
-    vec2 uv = vUv;
     vec2 center = vec2(0.5, 0.5);
-    float mist = curlNoise(uv * 4.0, uTime);
-    mist = pow(mist, 1.2);
-    float distFromCenter = length(uv - center);
-    float glow = exp(-distFromCenter * (3.0 + uCure * 5.0)) * (1.0 + uCure * 2.0);
-    float density = max(mist * (1.0 - uCure), glow * uCure);
-
-    // Palette: Scalar Red (thick), Deep Oxide (thin), Cold Blue (thinnest)
-    vec3 scalarRed = vec3(0.659, 0.0, 0.0);
-    vec3 deepOxide = vec3(0.122, 0.02, 0.063);
-    vec3 coldBlue = vec3(0.0, 0.063, 0.125);
-    vec3 darkBase = vec3(0.29, 0.0, 0.0);
-
-    // Thick mist -> Scalar Red; thin/fading -> Deep Oxide; thinnest -> hint of Cold Blue
-    float t = smoothstep(0.15, 0.7, density);
-    vec3 color = mix(deepOxide, scalarRed, t);
-    float thin = 1.0 - smoothstep(0.0, 0.25, density);
-    color = mix(color, coldBlue, thin * 0.25);
-    color = mix(darkBase, color, min(density * 1.2, 1.0));
-
-    float alpha = max(mist * (1.0 - uCure), glow * uCure);
-    gl_FragColor = vec4(color, alpha);
+    float dist = length(vUv - center);
+    
+    float singularity = 1.0 - smoothstep(0.0, 0.65, dist);
+    float tex = fbm(vUv * 1.5 + uTime * uSpeed);
+    float mass = singularity * (0.8 + 0.2 * tex);
+    
+    float rise = smoothstep(0.0, 0.5, uProgress);
+    float fall = smoothstep(0.5, 1.0, uProgress);
+    vec3 coreColor = mix(uColorDark, uColorPeak, rise);
+    coreColor = mix(coreColor, uColorCoreRed, fall);
+    vec3 finalColor = mix(uColorEdgeRed, coreColor, mass);
+    
+    float alpha = mass;
+    
+    gl_FragColor = vec4(finalColor, alpha);
   }
 `
 
-export default function CureSequenceShader({ 
-  onCureComplete 
-}: { 
+// Easing: sineOut (smooth start), exponentialIn (recession)
+function easeSineOut(t: number) {
+  return 1 - Math.cos((t * Math.PI) / 2)
+}
+function easeExponentialIn(t: number) {
+  return t <= 0 ? 0 : Math.pow(2, 10 * (t - 1))
+}
+
+export default function CureSequenceShader({
+  onCureComplete,
+}: {
   onCureComplete?: () => void
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const { viewport, size } = useThree()
-  const [cure, setCure] = useState(0)
-  const [cureStarted, setCureStarted] = useState(false)
-  
+  const [progress, setProgress] = useState(0)
+  const startTimeRef = useRef<number | null>(null)
+  const cureCompleteFired = useRef(false)
+
   const uniforms = useMemo(
     () => ({
-      uCure: { value: 0 },
+      uProgress: { value: 0 },
       uTime: { value: 0 },
-      uSpeed: { value: 0.05 },
-      uCurlStrength: { value: 0.8 },
+      uSpeed: { value: 0.1 },
+      uCurlStrength: { value: 2.0 },
     }),
     []
   )
-  
-  // Start cure sequence on mount
-  useEffect(() => {
-    if (!cureStarted) {
-      setCureStarted(true)
-      
-      setTimeout(() => {
-        const startTime = Date.now()
-        const duration = 5000 // 5 seconds
-        
-        const animate = () => {
-          const elapsed = Date.now() - startTime
-          const progress = Math.min(elapsed / duration, 1)
-          
-          // Easing: ease-out cubic
-          const eased = 1 - Math.pow(1 - progress, 3)
-          setCure(eased)
-          
-          if (progress < 1) {
-            requestAnimationFrame(animate)
-          } else {
-            onCureComplete?.()
-          }
-        }
-        
-        requestAnimationFrame(animate)
-      }, 100)
-    }
-  }, [cureStarted, onCureComplete])
 
   useFrame((state) => {
+    if (startTimeRef.current === null) startTimeRef.current = state.clock.elapsedTime
+    const elapsedMs = (state.clock.elapsedTime - startTimeRef.current) * 1000
+    const rawProgress = Math.min(elapsedMs / DURATION_MS, 1)
+
+    // Phase A (0–44%): sineOut expansion. Phase B (44–100%): exponentialIn recession.
+    const phaseSplit = 0.444 // ~2s of 4.5s
+    let eased = 0
+    if (rawProgress < phaseSplit) {
+      const t = rawProgress / phaseSplit
+      eased = phaseSplit * easeSineOut(t)
+    } else {
+      const t = (rawProgress - phaseSplit) / (1 - phaseSplit)
+      eased = phaseSplit + (1 - phaseSplit) * easeExponentialIn(t)
+    }
+    setProgress(eased)
+
+    if (rawProgress >= 1 && !cureCompleteFired.current) {
+      cureCompleteFired.current = true
+      onCureComplete?.()
+    }
+
     if (meshRef.current && uniforms) {
       const material = meshRef.current.material as THREE.ShaderMaterial
       if (material && material.uniforms) {
         material.uniforms.uTime.value = state.clock.elapsedTime
-        material.uniforms.uCure.value = cure
+        material.uniforms.uProgress.value = eased
+        // Standing wave: barely moves (uSpeed 0.1)
+        material.uniforms.uSpeed.value = 0.1
+        material.uniforms.uCurlStrength.value = 2.0
       }
     }
   })
 
   return (
     <mesh ref={meshRef} position={[0, 0, -1]}>
-      <planeGeometry args={[viewport.width, viewport.height, 64, 64]} />
+      <planeGeometry args={[10, 5, 64, 64]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}

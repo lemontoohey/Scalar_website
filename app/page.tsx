@@ -7,7 +7,6 @@ import type { Specimen } from '@/constants/specimens'
 import { playThud } from '@/hooks/useSound'
 import Hallmark from '@/components/Hallmark'
 import GlobalNav from '@/components/GlobalNav'
-import EnsoEchoCursor from '@/components/EnsoEchoCursor'
 import MetadataOverlays from '@/components/MetadataOverlays'
 import HardwareHandshake from '@/components/HardwareHandshake'
 import AtmosphericAudio from '@/components/AtmosphericAudio'
@@ -23,7 +22,7 @@ const HeroView = dynamic(() => import('@/components/HeroView'), { ssr: false })
 export type PageState = 'hero' | 'bifurcation' | 'gallery'
 export type ViewMode = 'cinema' | 'innovation'
 
-const CURE_THUD_MS = 4500
+const CURE_THUD_MS = 3700
 
 export default function Home() {
   const [state, setState] = useState<PageState>('hero')
@@ -78,7 +77,6 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-black" style={{ backgroundColor: '#000502' }}>
       <AtmosphericAudio />
-      <EnsoEchoCursor />
       <Hallmark onReset={resetSystem} />
       <MetadataOverlays />
       <HardwareHandshake />

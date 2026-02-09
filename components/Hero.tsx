@@ -14,7 +14,6 @@ const SpecimenGallery = dynamic(() => import('./SpecimenGallery'), { ssr: false 
 import Hallmark from './Hallmark'
 import MetadataOverlays from './MetadataOverlays'
 import HardwareHandshake from './HardwareHandshake'
-import EnsoEchoCursor from './EnsoEchoCursor'
 import BottomNav from './BottomNav'
 import DebugOverlay from './DebugOverlay'
 import ProductArchitecture from './ProductArchitecture'
@@ -29,7 +28,6 @@ export default function Hero() {
     <>
       <DebugOverlay />
       <AtmosphericAudio />
-      <EnsoEchoCursor />
       <Hallmark />
       <MetadataOverlays />
       <HardwareHandshake />

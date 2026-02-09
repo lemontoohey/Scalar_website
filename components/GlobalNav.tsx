@@ -10,8 +10,9 @@ export default function GlobalNav({ onInnovationClick }: GlobalNavProps) {
       <div className="flex justify-between items-center px-6 py-3 text-[10px] font-mono text-[#FCFBF8]/60 tracking-widest uppercase">
         {/* Left: The Navigation */}
         <div className="flex gap-8">
-          <span className="hover:text-[#A80000] cursor-pointer transition-colors">home</span>
+          <span data-thermal-hover className="hover:text-[#A80000] cursor-pointer transition-colors">home</span>
           <span
+            data-thermal-hover
             role="button"
             tabIndex={0}
             onClick={onInnovationClick}
@@ -25,7 +26,7 @@ export default function GlobalNav({ onInnovationClick }: GlobalNavProps) {
           >
             innovation
           </span>
-          <span className="hover:text-[#A80000] cursor-pointer transition-colors">collections</span>
+          <span data-thermal-hover className="hover:text-[#A80000] cursor-pointer transition-colors">collections</span>
         </div>
 
         {/* Right: The Live Tracker */}

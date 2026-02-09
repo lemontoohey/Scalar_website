@@ -8,25 +8,20 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      colors: {
-        'scalar-red': {
-          DEFAULT: '#A80000',
-          light: '#C50000',
-        },
-        'scalar-black': {
-          DEFAULT: '#000000',
-          charcoal: '#1a1a1a',
-          dark: '#000000',
-        },
-        'atmospheric-blue': {
-          DEFAULT: '#001A23',
-        },
-      },
       fontFamily: {
         sans: ['var(--font-archivo)', 'sans-serif'],
         heading: ['var(--font-archivo)', 'sans-serif'],
-        body: ['var(--font-archivo)', 'sans-serif'],
         narrow: ['var(--font-archivo-narrow)', 'sans-serif'],
+        mono: ['monospace'],
+      },
+      colors: {
+        'scalar-red': '#A80000',
+        'scalar-black': '#000502',
+        'scalar-black-charcoal': '#1a1a1a',
+        parchment: '#FCFBF8',
+        'atmospheric-blue': {
+          DEFAULT: '#001A23',
+        },
       },
       backdropBlur: {
         xs: '2px',
