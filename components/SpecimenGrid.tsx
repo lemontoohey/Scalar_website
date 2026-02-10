@@ -23,9 +23,9 @@ export default function SpecimenGrid({
       className={`overflow-auto pt-24 pb-32 z-10 ${contained ? 'absolute inset-0' : 'fixed inset-0'}`}
       style={{ backgroundColor: '#000502' }}
     >
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 sm:px-12">
         <div
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto"
+          className="specimen-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto"
           style={{ perspective: '1200px' }}
         >
           {filtered.map((specimen) => (

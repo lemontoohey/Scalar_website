@@ -17,7 +17,7 @@ export default function InnovationLayer({ onClose }: { onClose: () => void }) {
         <div className="fixed top-6 right-6 z-50 mix-blend-difference">
           <button
             onClick={onClose}
-            className="text-[10px] font-mono border border-[#FCFBF8]/20 px-4 py-2 hover:bg-[#A80000] hover:border-[#A80000] hover:text-[#000502] transition-colors bg-[#000502]/80 backdrop-blur-sm uppercase tracking-widest"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[10px] font-mono border border-[#FCFBF8]/20 px-4 py-2 hover:bg-[#A80000] hover:border-[#A80000] hover:text-[#000502] transition-colors bg-[#000502]/80 backdrop-blur-sm uppercase tracking-widest"
           >
             [Close_Protocol]
           </button>

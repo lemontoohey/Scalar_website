@@ -112,7 +112,7 @@ export default function SpecimenCard({
             playThud()
             onInitiateProcurement(specimen.name)
           }}
-          className="mt-2 text-[8px] uppercase tracking-wider border border-[#FCFBF8]/20 text-[#FCFBF8]/60 hover:text-[#FCFBF8] hover:border-[#FCFBF8]/40 transition-colors px-2 py-1"
+          className="mt-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-[8px] uppercase tracking-wider border border-[#FCFBF8]/20 text-[#FCFBF8]/60 hover:text-[#FCFBF8] hover:border-[#FCFBF8]/40 transition-colors px-2 py-1"
           style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
         >
           Initiate Procurement

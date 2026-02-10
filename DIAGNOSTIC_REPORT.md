@@ -1,7 +1,7 @@
 # Full Diagnostic Report — Scalar Website
 
-**Date:** 2026-02-10  
-**Scope:** Build, imports, components, hooks, config, dead code, and consistency.
+**Date:** 2026-02-10 (updated)  
+**Scope:** Build, imports, components, hooks, config, dead code, mobile UX, and consistency.
 
 ---
 
@@ -32,12 +32,12 @@
 ### 3.1 Client / server and Canvas
 
 - **ClientCanvas.tsx** — Has `'use client'`; Canvas only after `shouldRender` (useLayoutEffect). OK.
-- **HeroView, Hero, SpecimenGallery, OpticalEngine** — Load ClientCanvas (or CureSequenceShader) with `dynamic(..., { ssr: false })`. OK.
+- **HeroView** — Loads ClientCanvas and CureSequenceShader with `dynamic(..., { ssr: false })`. OK.
 - **CureSequenceShader** — Uses `useThree().viewport` (R3F 8). Compatible.
 
 ### 3.2 HeroView.tsx
 
-- **Redundant guard:** ClientCanvas is wrapped in `typeof window !== 'undefined'`. HeroView is already loaded with `ssr: false`, so it only runs on the client. The check is redundant and can be removed for clarity.
+- **ClientCanvas** — Renders without redundant `window` guard (cleanup applied). HeroView is already loaded with `ssr: false`, so it only runs on the client. The check is redundant and can be removed for clarity.
 - **CureSequenceShader:** Used without `onCureComplete`. Page drives “cure” and thud by a timer (`CURE_THUD_MS`); no bug.
 
 ### 3.3 ThermalCursor.tsx
@@ -95,7 +95,7 @@
 | **next.config.js** | OK | `output: 'export'`, `images.unoptimized: true`, `transpilePackages` for three/R3F. |
 | **tsconfig.json** | OK | `paths` `@/*` → `./*`; `jsx: preserve` for Next. |
 | **tailwind.config.ts** | OK | Content paths include app/components/pages; scalar-red, scalar-black, fonts. |
-| **globals.css** | OK | `cursor: none` only under `(hover: hover) and (pointer: fine)`; body and utilities. |
+| **globals.css** | OK | `cursor: none` under `(hover: hover) and (pointer: fine)`; `:root` overscroll-behavior; html/body max-width/overflow-x/-webkit-font-smoothing; mobile `.specimen-grid` (1 col, 2rem gap), `.hero-title` clamp. |
 
 ---
 
@@ -116,4 +116,17 @@
 | Medium (logic / UX / maintainability) | 0 | Cleanup applied (dead components and bifurcation type removed). |
 | Low / optional | 2 | ESLint not configured; optional Lenis cleanup refs; LensText external font. |
 
-**Conclusion:** The project builds cleanly, has no broken imports, and follows consistent patterns for client-only Canvas and R3F. Dead-code cleanup has been applied. Adding ESLint remains recommended.
+---
+
+## 8. Recent changes (mobile & logo)
+
+| Area | Status |
+|------|--------|
+| **Hallmark logo** | Optical alignment offset **1.5mm** left (`translateX(-1.5mm)`); 44px min touch target. |
+| **Main layout** | `min-h-[100dvh]` for mobile viewport stability. |
+| **Touch targets** | GlobalNav, SpecimenCard button, InnovationLayer close, Hallmark — all ≥44×44px. |
+| **Padding** | SpecimenGrid & GlobalNav: `px-6 sm:px-12`. |
+| **ClientCanvas** | Camera z = 6 when `innerWidth < 768` so mist is less cramped on narrow viewports. |
+| **globals.css** | Overscroll-behavior, overflow-x hidden, mobile `.specimen-grid` single column, `.hero-title` responsive clamp. |
+
+**Conclusion:** The project builds cleanly, has no broken imports, and follows consistent patterns for client-only Canvas and R3F. Dead-code cleanup and mobile-first refinements are applied. Adding ESLint remains recommended.

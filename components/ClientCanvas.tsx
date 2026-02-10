@@ -12,10 +12,15 @@ function ClientCanvas({
   fallback?: React.ReactNode
 }) {
   const [shouldRender, setShouldRender] = useState(false)
+  const [cameraZ, setCameraZ] = useState(5)
 
   // useLayoutEffect ensures we are truly on the client before the first paint hits the WebGL context
   useLayoutEffect(() => {
     setShouldRender(true)
+    // Mobile: camera further back so mist doesn't feel cramped (narrow viewport)
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setCameraZ(6)
+    }
   }, [])
 
   if (!shouldRender) {
@@ -30,7 +35,7 @@ function ClientCanvas({
             flat
             dpr={[1, 2]}
             gl={{ antialias: true, alpha: true, stencil: false, depth: true }}
-            camera={{ position: [0, 0, 5], fov: 45 }}
+            camera={{ position: [0, 0, cameraZ], fov: 45 }}
           >
             {children}
           </Canvas>

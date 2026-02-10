@@ -102,7 +102,7 @@ export default function HeroView({
         <div className="relative text-center" style={{ zIndex: 50 }}>
           <div className="space-y-4">
             <motion.h1
-              className="text-7xl md:text-9xl font-light tracking-[0.4em] mix-blend-screen text-[#FCFBF8]"
+              className="hero-title text-7xl md:text-9xl font-light tracking-[0.4em] mix-blend-screen text-[#FCFBF8]"
               style={{
                 fontFamily: 'var(--font-archivo)',
                 fontWeight: 300,

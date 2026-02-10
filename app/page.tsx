@@ -75,7 +75,7 @@ export default function Home() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-black" style={{ backgroundColor: '#000502' }}>
+    <main className="min-h-[100dvh] min-h-screen bg-black" style={{ backgroundColor: '#000502' }}>
       <AtmosphericAudio />
       <Hallmark onReset={resetSystem} />
       <MetadataOverlays />

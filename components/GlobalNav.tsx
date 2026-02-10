@@ -7,10 +7,10 @@ type GlobalNavProps = {
 export default function GlobalNav({ onInnovationClick }: GlobalNavProps) {
   return (
     <div className="fixed bottom-0 left-0 w-full z-40 border-t border-[#FCFBF8]/10 bg-[#000502]/80 backdrop-blur-sm">
-      <div className="flex justify-between items-center px-6 py-3 text-[10px] font-mono text-[#FCFBF8]/60 tracking-widest uppercase">
-        {/* Left: The Navigation */}
+      <div className="flex justify-between items-center px-6 sm:px-12 py-3 min-h-[44px] text-[10px] font-mono text-[#FCFBF8]/60 tracking-widest uppercase">
+        {/* Left: The Navigation — min 44px touch targets */}
         <div className="flex gap-8">
-          <span data-thermal-hover className="hover:text-[#A80000] cursor-pointer transition-colors">home</span>
+          <span data-thermal-hover className="hover:text-[#A80000] cursor-pointer transition-colors min-w-[44px] min-h-[44px] flex items-center">home</span>
           <span
             data-thermal-hover
             role="button"
@@ -22,11 +22,11 @@ export default function GlobalNav({ onInnovationClick }: GlobalNavProps) {
                 onInnovationClick()
               }
             }}
-            className="hover:text-[#A80000] cursor-pointer transition-colors"
+            className="hover:text-[#A80000] cursor-pointer transition-colors min-w-[44px] min-h-[44px] flex items-center"
           >
             innovation
           </span>
-          <span data-thermal-hover className="hover:text-[#A80000] cursor-pointer transition-colors">collections</span>
+          <span data-thermal-hover className="hover:text-[#A80000] cursor-pointer transition-colors min-w-[44px] min-h-[44px] flex items-center">collections</span>
         </div>
 
         {/* Right: The Live Tracker */}
