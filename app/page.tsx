@@ -19,7 +19,7 @@ import InnovationLayer from '@/components/InnovationLayer'
 
 const HeroView = dynamic(() => import('@/components/HeroView'), { ssr: false })
 
-export type PageState = 'hero' | 'bifurcation' | 'gallery'
+export type PageState = 'hero' | 'gallery'
 export type ViewMode = 'cinema' | 'innovation'
 
 const CURE_THUD_MS = 3700

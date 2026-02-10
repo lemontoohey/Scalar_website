@@ -42,13 +42,13 @@ npm run dev
 │   ├── page.tsx        # Home page
 │   └── globals.css     # Global styles
 ├── components/
-│   ├── Header.tsx      # Navigation header
-│   ├── Hero.tsx        # Hero section
-│   ├── Vision.tsx      # Vision/About section
-│   ├── Technology.tsx  # Technology section
-│   ├── Collection.tsx  # Product collection
-│   ├── SecretMenu.tsx  # Secret menu pigments
-│   ├── Footer.tsx      # Footer
+│   ├── HeroView.tsx     # Hero (mist, Scalar text, organic/inorganic)
+│   ├── ClientCanvas.tsx # R3F Canvas wrapper (SSR-safe)
+│   ├── CureSequenceShader.tsx  # Hero mist shader
+│   ├── SpecimenGrid.tsx # Specimen cards grid
+│   ├── Technology.tsx   # Technology section
+│   ├── Collection.tsx   # Product collection
+│   ├── SecretMenu.tsx   # Secret menu pigments
 │   └── (glass cards inlined in SecretMenu, Collection, Technology)
 └── lib/
     └── utils.ts        # Utility functions (cn helper)

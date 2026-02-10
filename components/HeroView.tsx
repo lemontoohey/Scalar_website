@@ -80,24 +80,22 @@ export default function HeroView({
         }}
         aria-hidden
       />
-      {typeof window !== 'undefined' && (
-        <ClientCanvas
-          fallback={
-            <div
-              className="absolute inset-0 z-[1]"
-              style={{
-                background:
-                  'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(74,0,0,0.45) 0%, rgba(31,5,16,0.3) 40%, transparent 65%)',
-              }}
-            />
-          }
-        >
-          <CureSequenceShader />
-          <LensText position={[0, 0.3, 0]} fontSize={2.5}>
-            Scalar
-          </LensText>
-        </ClientCanvas>
-      )}
+      <ClientCanvas
+        fallback={
+          <div
+            className="absolute inset-0 z-[1]"
+            style={{
+              background:
+                'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(74,0,0,0.45) 0%, rgba(31,5,16,0.3) 40%, transparent 65%)',
+            }}
+          />
+        }
+      >
+        <CureSequenceShader />
+        <LensText position={[0, 0.3, 0]} fontSize={2.5}>
+          Scalar
+        </LensText>
+      </ClientCanvas>
 
       {/* Layer 2 (Middle): Hero text - center */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pointer-events-none">
