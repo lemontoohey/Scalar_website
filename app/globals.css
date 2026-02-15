@@ -91,9 +91,27 @@
   }
 }
 
-/* Prevent focus/tap outline box on hero text */
+/* Prevent focus/tap outline box on hero text (mobile) */
 .hero-title,
-.hero-title:focus {
+.hero-title:focus,
+.hero-text-block,
+.hero-text-block * {
   outline: none !important;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Remove any focus ring / selection box (keep filter: drop-shadow for glow) */
+.hero-text-block:focus,
+.hero-text-block:focus-within {
+  outline: none !important;
+}
+
+@media (max-width: 768px) {
+  .hero-text-block,
+  .hero-text-block * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }

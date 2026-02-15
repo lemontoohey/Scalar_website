@@ -76,17 +76,19 @@ export default function Home() {
   return (
     <main className="min-h-[100dvh] min-h-screen bg-black" style={{ backgroundColor: '#000502' }}>
       <AtmosphericAudio />
-      {/* Reset to hero (no logo) */}
-      <button
-        type="button"
-        onClick={resetSystem}
-        onMouseEnter={playLensClick}
-        className="fixed top-8 left-8 z-[100] min-w-[44px] min-h-[44px] flex items-center justify-center text-[#FCFBF8]/70 hover:text-[#FCFBF8] font-light tracking-[0.3em] text-sm uppercase transition-colors outline-none border-0 bg-transparent cursor-pointer"
-        style={{ fontFamily: 'var(--font-archivo)', WebkitTapHighlightColor: 'transparent' }}
-        aria-label="Scalar Materials – reset to home"
-      >
-        Scalar
-      </button>
+      {/* Top-left Scalar: only on non-landing pages (gallery, innovation, modal) to guide back */}
+      {(state !== 'hero' || viewMode === 'innovation' || viewingSpecimen !== null || procurementOpen) && (
+        <button
+          type="button"
+          onClick={resetSystem}
+          onMouseEnter={playLensClick}
+          className="fixed top-8 left-8 z-[100] min-w-[44px] min-h-[44px] flex items-center justify-center text-[#FCFBF8]/70 hover:text-[#FCFBF8] font-light tracking-[0.3em] text-sm uppercase transition-colors outline-none border-0 bg-transparent cursor-pointer"
+          style={{ fontFamily: 'var(--font-archivo)', WebkitTapHighlightColor: 'transparent' }}
+          aria-label="Scalar Materials – reset to home"
+        >
+          Scalar
+        </button>
+      )}
       <MetadataOverlays />
       <HardwareHandshake />
       <ScanningLine />
