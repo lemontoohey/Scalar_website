@@ -102,7 +102,7 @@ export default function HeroView({
         <div className="relative text-center" style={{ zIndex: 50 }}>
           <div className="space-y-4">
             <motion.h1
-              className="hero-title text-7xl md:text-9xl font-light tracking-[0.4em] mix-blend-screen text-[#FCFBF8]"
+              className="hero-title text-7xl md:text-9xl font-light tracking-[0.4em] mix-blend-screen text-[#FCFBF8] outline-none select-none"
               style={{
                 fontFamily: 'var(--font-archivo)',
                 fontWeight: 300,
@@ -110,6 +110,8 @@ export default function HeroView({
                 WebkitBackdropFilter: 'blur(10px)',
                 filter: 'drop-shadow(0 0 20px rgba(168, 0, 0, 0.3))',
                 textShadow: '0 0 40px rgba(168, 0, 0, 0.2)',
+                outline: 'none',
+                WebkitTapHighlightColor: 'transparent',
               }}
               variants={scalarVariant}
               initial="hidden"

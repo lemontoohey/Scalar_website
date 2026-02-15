@@ -85,5 +85,15 @@
   .hero-title {
     font-size: clamp(2rem, 10vw, 4rem);
     line-height: 1.1;
+    /* Remove black outline/box on tap (iOS/Safari) */
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Prevent focus/tap outline box on hero text */
+.hero-title,
+.hero-title:focus {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
 }

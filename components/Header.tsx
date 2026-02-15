@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
@@ -27,32 +26,12 @@ export default function Header() {
       transition={{ duration: 0.6 }}
     >
       <nav className="container mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center group z-50">
-          <motion.div 
-            className="relative transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          >
-            <div className="absolute inset-0 bg-scalar-red/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
-            <img
-              src="/logo.png"
-              alt="Scalar Materials Logo"
-              className="object-contain relative z-50"
-              style={{ 
-                backgroundColor: 'transparent', 
-                display: 'block',
-                width: '56px',
-                height: '56px',
-                minWidth: '56px',
-                minHeight: '56px',
-                filter: 'drop-shadow(0 0 10px rgba(168, 0, 0, 0.5))'
-              } as React.CSSProperties}
-              onError={(e) => {
-                console.error('Logo failed to load:', e);
-                (e.target as HTMLImageElement).style.border = '2px solid red';
-              }}
-            />
-          </motion.div>
+        <Link
+          href="/"
+          className="flex items-center group z-50 text-[#FCFBF8]/80 hover:text-[#FCFBF8] font-light tracking-[0.3em] text-sm uppercase transition-colors min-h-[44px] min-w-[44px] items-center justify-center"
+          style={{ fontFamily: 'var(--font-archivo)' }}
+        >
+          Scalar
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
