@@ -43,26 +43,42 @@ const fragmentShader = `
     float f = smoothNoise(p);
     f += 0.5 * smoothNoise(p * 2.0);
     f += 0.25 * smoothNoise(p * 4.0);
-    return f / 1.75;
+    f += 0.125 * smoothNoise(p * 8.0);
+    return f / 2.0;
   }
   
   void main() {
     vec2 center = vec2(0.5, 0.5);
     float dist = length(vUv - center);
     
-    float singularity = 1.0 - smoothstep(0.0, 0.65, dist);
-    float tex = fbm(vUv * 1.5 + uTime * uSpeed);
-    float mass = singularity * (0.8 + 0.2 * tex);
+    /* Vignette fix: softer falloff so mist stays present across whole SCALAR */
+    float singularity = 1.0 - smoothstep(0.0, 0.88, dist);
     
-    const vec3 uColorRest = vec3(0.27, 0.0, 0.0);
+    /* Increase density: more FBM octaves + higher mass base */
+    float tex = fbm(vUv * 2.0 + uTime * uSpeed);
+    float mass = singularity * (0.88 + 0.35 * tex);
+    mass = clamp(mass, 0.0, 1.0);
+    
+    /* Internal contrast: dark = black, red = vivid #FF5A5F (1, 0.353, 0.373) */
+    const vec3 uColorDark = vec3(0.0, 0.0, 0.0);
+    const vec3 uColorRed = vec3(1.0, 0.353, 0.373);
     const vec3 uColorPeak = vec3(1.0, 0.988, 0.91);
     
-    float ignitionHeat = smoothstep(0.0, 0.5, uProgress) * (1.0 - smoothstep(0.5, 1.0, uProgress));
-    vec3 hotCoreColor = mix(uColorRest, uColorPeak, ignitionHeat);
-    vec3 finalColor = mix(uColorRest, hotCoreColor, mass);
+    /* Cure transition: red stays deep until sharp flash to white */
+    float ignitionHeat = smoothstep(0.35, 0.5, uProgress) * (1.0 - smoothstep(0.5, 0.55, uProgress));
+    vec3 hotCoreColor = mix(uColorRed, uColorPeak, ignitionHeat);
+    
+    /* Steep mapping: dark parts black, red parts vivid */
+    float mappedMass = pow(mass, 0.75);
+    vec3 finalColor = mix(uColorDark, hotCoreColor, mappedMass);
+    
+    /* Boost red saturation (1.8x) for liquid-light feel */
+    finalColor.r = min(1.0, finalColor.r * 1.8);
+    finalColor.g = finalColor.g * 0.9;
+    finalColor.b = finalColor.b * 0.9;
     
     float recession = 1.0 - smoothstep(0.5, 1.0, uProgress);
-    float alpha = mass * (0.4 + 0.6 * recession);
+    float alpha = mass * (0.55 + 0.45 * recession);
     
     gl_FragColor = vec4(finalColor, alpha);
   }
