@@ -80,22 +80,27 @@ export default function HeroView({
         }}
         aria-hidden
       />
-      <ClientCanvas
-        fallback={
-          <div
-            className="absolute inset-0 z-[1]"
-            style={{
-              background:
-                'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(74,0,0,0.45) 0%, rgba(31,5,16,0.3) 40%, transparent 65%)',
-            }}
-          />
-        }
+      {/* Mist container: radial mask feathers edges, no visible square box */}
+      <div
+        className="absolute inset-0 z-[1] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,white_15%,transparent_70%)] [-webkit-mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,white_15%,transparent_70%)] [mask-size:100%_100%] [-webkit-mask-size:100%_100%]"
       >
-        <CureSequenceShader />
-        <LensText position={[0, 0.3, 0]} fontSize={2.5}>
-          Scalar
-        </LensText>
-      </ClientCanvas>
+        <ClientCanvas
+          fallback={
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(74,0,0,0.45) 0%, rgba(31,5,16,0.3) 40%, transparent 65%)',
+              }}
+            />
+          }
+        >
+          <CureSequenceShader />
+          <LensText position={[0, 0.3, 0]} fontSize={2.5}>
+            Scalar
+          </LensText>
+        </ClientCanvas>
+      </div>
 
       {/* Layer 2 (Middle): Hero text - center (no outline on mobile) */}
       <section className="hero-text-block relative min-h-screen flex flex-col items-center justify-center overflow-hidden pointer-events-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
