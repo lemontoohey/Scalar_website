@@ -99,15 +99,14 @@ export default function HeroView({
 
       {/* Layer 2 (Middle): Hero text - center (no outline on mobile) */}
       <section className="hero-text-block relative min-h-screen flex flex-col items-center justify-center overflow-hidden pointer-events-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
-        <div className="relative text-center" style={{ zIndex: 50, outline: 'none' }}>
+        <div className="relative text-center" style={{ zIndex: 50, outline: 'none', background: 'transparent' }}>
           <div className="space-y-4">
             <motion.h1
-              className="hero-title text-7xl md:text-9xl font-light tracking-[0.4em] mix-blend-screen text-[#FCFBF8] outline-none select-none"
+              className="hero-title text-7xl md:text-9xl font-light tracking-[0.4em] text-[#FCFBF8] outline-none select-none"
               style={{
                 fontFamily: 'var(--font-archivo)',
                 fontWeight: 300,
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
+                background: 'transparent',
                 filter: 'drop-shadow(0 0 20px rgba(168, 0, 0, 0.3))',
                 textShadow: '0 0 40px rgba(168, 0, 0, 0.2)',
                 outline: 'none',
@@ -120,12 +119,11 @@ export default function HeroView({
               Scalar
             </motion.h1>
             <motion.p
-              className="text-lg md:text-xl font-light tracking-[0.6em] lowercase mix-blend-screen text-[#FCFBF8]/80 mt-4"
+              className="text-lg md:text-xl font-light tracking-[0.6em] lowercase text-[#FCFBF8]/80 mt-4"
               style={{
                 fontFamily: 'var(--font-archivo)',
                 fontWeight: 300,
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
+                background: 'transparent',
               }}
               variants={ordinanceVariant}
               initial="hidden"
