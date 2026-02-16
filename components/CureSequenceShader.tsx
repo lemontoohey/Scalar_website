@@ -24,81 +24,64 @@ const fragmentShader = `
   
   varying vec2 vUv;
   
-  /* Simplex Noise */
-  vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-  
-  float snoise(vec2 v){
-    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
-             -0.577350269189626, 0.024390243902439);
-    vec2 i  = floor(v + dot(v, C.yy) );
-    vec2 x0 = v -   i + dot(i, C.xx);
-    vec2 i1;
-    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-    vec4 x12 = x0.xyxy + C.xxzz;
-    x12.xy -= i1;
-    i = mod(i, 289.0);
-    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
-    + i.x + vec3(0.0, i1.x, 1.0 ));
-    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-    m = m*m ;
-    return 130.0 * dot(m, vec3( dot(x0,p.x), dot(x12.xy,p.y), dot(x12.zw,p.z) ));
+  float noise(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
   }
   
-  /* Fractal Brownian Motion for rich texture */
+  float smoothNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = noise(i);
+    float b = noise(i + vec2(1.0, 0.0));
+    float c = noise(i + vec2(0.0, 1.0));
+    float d = noise(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+  
   float fbm(vec2 p) {
-    float f = 0.0;
-    f += 0.500 * snoise(p); p = p * 2.02;
-    f += 0.250 * snoise(p); p = p * 2.03;
-    f += 0.125 * snoise(p);
-    return f;
+    float f = smoothNoise(p);
+    f += 0.5 * smoothNoise(p * 2.0);
+    f += 0.25 * smoothNoise(p * 4.0);
+    f += 0.125 * smoothNoise(p * 8.0);
+    return f / 2.0;
   }
   
   void main() {
-    /* 1. Centering & Soft Mask */
-    vec2 center = vUv - 0.5;
-    float dist = length(center);
+    vec2 center = vec2(0.5, 0.5);
+    float dist = length(vUv - center);
     
-    /* Re-enable Expansion: mist grows from 0 to max (0.45) as animation plays.
-       Cap at 0.48 to avoid square edges (distance to edge is 0.5). */
-    float expandT = smoothstep(0.0, 0.1, uProgress);
-    float currentRadius = min(0.45 * expandT, 0.48);
+    /* Vignette fix: softer falloff so mist stays present across whole SCALAR, no visible box */
+    float singularity = 1.0 - smoothstep(0.0, 0.88, dist);
     
-    /* Dynamic mask: soft falloff from center, uses expanding radius */
-    float radialMask = 1.0 - smoothstep(currentRadius * 0.5, currentRadius, dist);
+    /* Increase density: more FBM octaves + higher mass base */
+    float tex = fbm(vUv * 2.0 + uTime * uSpeed);
+    float mass = singularity * (0.88 + 0.35 * tex);
+    mass = clamp(mass, 0.0, 1.0);
     
-    /* 2. Mist Texture */
-    // Make the noise move slowly with time
-    float mist = fbm(vUv * 3.0 + uTime * 0.15);
+    /* Internal contrast: dark = black, red = vivid #FF5A5F */
+    const vec3 uColorDark = vec3(0.0, 0.0, 0.0);
+    const vec3 uColorRed = vec3(1.0, 0.353, 0.373);
+    const vec3 uColorPeak = vec3(1.0, 0.988, 0.91);
     
-    // Combine mask and mist. 
-    // We power it to make the center hot and edges soft.
-    float density = radialMask * (0.6 + 0.4 * mist);
-    density = pow(density, 1.5); // Tighten the cloud
+    /* Cure transition: red stays deep until sharp flash to white */
+    float ignitionHeat = smoothstep(0.35, 0.5, uProgress) * (1.0 - smoothstep(0.5, 0.55, uProgress));
+    vec3 hotCoreColor = mix(uColorRed, uColorPeak, ignitionHeat);
     
-    /* 3. Colors */
-    // Deep Void Background (Transparent)
-    vec3 colorBlack = vec3(0.0);
+    /* Steep mapping: dark parts black, red parts vivid */
+    float mappedMass = pow(mass, 0.75);
+    vec3 finalColor = mix(uColorDark, hotCoreColor, mappedMass);
     
-    // Electric Persimmon / Red Boost
-    vec3 colorRed = vec3(1.0, 0.2, 0.25); // Boosted Red
-    vec3 colorHot = vec3(1.0, 0.95, 0.9); // White hot center
+    /* Boost red saturation (1.8x) for liquid-light feel */
+    finalColor.r = min(1.0, finalColor.r * 1.8);
+    finalColor.g = finalColor.g * 0.9;
+    finalColor.b = finalColor.b * 0.9;
     
-    /* 4. Cure Flash Logic - white flash at peak of animation */
-    float flash = smoothstep(0.4, 0.5, uProgress) * (1.0 - smoothstep(0.5, 0.6, uProgress));
+    float recession = 1.0 - smoothstep(0.5, 1.0, uProgress);
+    float alpha = mass * (0.55 + 0.45 * recession);
     
-    // Mix Colors: red base, then blend to white at flash peak
-    vec3 finalColor = mix(colorBlack, colorRed, density);
-    finalColor = mix(finalColor, colorHot, flash * (0.9 + 0.1 * density));
-    
-    /* 5. Alpha/Opacity Logic */
-    float alpha = density;
-    
-    // Box fix: never exceed 0.48 (distance to edge is 0.5)
-    alpha *= (1.0 - smoothstep(currentRadius, 0.48, dist));
-    
-    // Handle the fade out at end of animation
-    float recession = 1.0 - smoothstep(0.6, 1.0, uProgress);
-    alpha *= recession;
+    /* Extra fade at edges to prevent visible box */
+    alpha *= (1.0 - smoothstep(0.75, 0.9, dist));
     
     gl_FragColor = vec4(finalColor, alpha);
   }
@@ -123,12 +106,8 @@ export default function CureSequenceShader({
   const startTimeRef = useRef<number | null>(null)
   const cureCompleteFired = useRef(false)
   
-  /* 
-     Make plane slightly larger than viewport so the 'soft fade' 
-     happens well within the screen bounds 
-  */
-  const planeWidth = viewport.width * 1.2
-  const planeHeight = viewport.height * 1.2
+  const planeWidth = viewport.width * 0.8
+  const planeHeight = viewport.height * 0.8
 
   const uniforms = useMemo(
     () => ({
@@ -178,8 +157,6 @@ export default function CureSequenceShader({
         fragmentShader={fragmentShader}
         uniforms={uniforms}
         transparent={true}
-        depthWrite={false} 
-        blending={THREE.AdditiveBlending} 
       />
     </mesh>
   )
