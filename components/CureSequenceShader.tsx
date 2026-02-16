@@ -79,8 +79,9 @@ const fragmentShader = `
     vec3 colorWhite = vec3(1.0, 1.0, 1.0); // Pure White
 
     // 5. FLASH LOGIC (THE FIX)
-    // At 0.45 progress, flashStrength hits 1.0 so White overrides Red completely.
-    float flashStrength = smoothstep(0.4, 0.45, uProgress) * (1.0 - smoothstep(0.45, 0.55, uProgress));
+    // Eased uProgress peaks at 0.444 during expansion, so flash must cover that range.
+    // Ramp 0.32->0.42, hold until 0.48, fade 0.48->0.58
+    float flashStrength = smoothstep(0.32, 0.42, uProgress) * (1.0 - smoothstep(0.48, 0.58, uProgress));
     flashStrength = clamp(flashStrength * 2.0, 0.0, 1.0);
 
     vec3 baseColor = mix(colorBlack, colorRed, density);
