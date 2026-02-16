@@ -17,87 +17,89 @@ const vertexShader = `
 const fragmentShader = `
   uniform float uProgress;
   uniform float uTime;
-  uniform float uSpeed;
   
   varying vec2 vUv;
-  
-  /* --- Noise Functions --- */
-  float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-  
-  float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    float a = hash(i);
-    float b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0));
-    float d = hash(i + vec2(1.0, 1.0));
-    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+
+  // --- SIMPLEX NOISE (The "Silky" Math) ---
+  vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+
+  float snoise(vec2 v){
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+             -0.577350269189626, 0.024390243902439);
+    vec2 i  = floor(v + dot(v, C.yy) );
+    vec2 x0 = v -   i + dot(i, C.xx);
+    vec2 i1;
+    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod(i, 289.0);
+    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+    + i.x + vec3(0.0, i1.x, 1.0 ));
+    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+    m = m*m ;
+    return 130.0 * dot(m, vec3( dot(x0,p.x), dot(x12.xy,p.y), dot(x12.zw,p.z) ));
   }
-  
+
+  // --- FBM (The "Cloud" Texture) ---
   float fbm(vec2 p) {
     float f = 0.0;
-    f += 0.500 * noise(p); p *= 2.02;
-    f += 0.250 * noise(p); p *= 2.03;
-    f += 0.125 * noise(p);
+    f += 0.500 * snoise(p); p *= 2.02;
+    f += 0.250 * snoise(p); p *= 2.03;
+    f += 0.125 * snoise(p);
     return f;
   }
-  
+
   void main() {
-    /* 1. Center Coordinates */
+    // 1. Center Coordinates & Distance
     vec2 center = vUv - 0.5;
     float dist = length(center);
-    
-    /* 2. THE BOX KILLER (Safety Mask)
-       The geometry edge is at 0.5. We MUST fade to 0.0 before we hit 0.5.
-       We fade from 0.35 to 0.48. Anything past 0.48 is deleted.
-    */
-    float edgeMask = 1.0 - smoothstep(0.35, 0.48, dist);
 
-    /* 3. Liquid Animation
-       We animate the noise coordinates to make it flow.
-    */
-    float flow = fbm(vUv * 3.0 + uTime * uSpeed);
-    
-    /* 4. Expansion Logic
-       We combine the edgeMask (static safety) with the animation (growing).
-       uProgress 0 -> 0.44 expands the cloud.
-       uProgress 0.44 -> 1.0 fades it out.
-    */
-    // Create a growing "core" based on progress
-    float coreSize = smoothstep(0.0, 0.2, uProgress); 
-    float density = edgeMask * (0.6 + 0.4 * flow) * coreSize;
-    
-    // Sharpen the cloud
-    density = pow(density, 1.2); 
+    // 2. TIGHTEN THE LIGHT (The Size Fix)
+    // We restrict the mist to a tighter circle (0.35) instead of the whole plane (0.5).
+    // This prevents the "Too Big" issue.
+    float containerMask = 1.0 - smoothstep(0.2, 0.35, dist);
 
-    /* 5. Colors */
+    // 3. ANIMATION LOGIC (The Clunk Fix)
+    // Use Simplex Noise + Time for organic flow
+    float mist = fbm(vUv * 4.0 + uTime * 0.2); 
+    
+    // Growth Animation:
+    // uProgress 0.0 -> 0.4: Grow from nothing.
+    // uProgress 0.4 -> 1.0: Fade out.
+    float growth = smoothstep(0.0, 0.3, uProgress) * (1.0 - smoothstep(0.5, 1.0, uProgress));
+    
+    // Combine Logic
+    float density = containerMask * mist * growth;
+    
+    // Sharpen the cloud edges
+    density = pow(density, 1.5); 
+    // Boost the core brightness
+    density *= 2.0;
+
+    // 4. COLORS
     vec3 colorBlack = vec3(0.0);
-    vec3 colorRed = vec3(1.0, 0.35, 0.37); // Vivid Red/Pink
-    vec3 colorWhite = vec3(1.0, 0.98, 0.92);
+    vec3 colorRed = vec3(1.0, 0.25, 0.3); // Deep Red/Pink
+    vec3 colorWhite = vec3(1.0, 0.95, 0.9); // White Hot
 
-    /* 6. Flash Logic (The Cure) */
-    float flash = smoothstep(0.4, 0.5, uProgress) * (1.0 - smoothstep(0.5, 0.6, uProgress));
+    // 5. FLASH LOGIC (The Cure)
+    // Sharp flash at uProgress ~0.45
+    float flash = smoothstep(0.42, 0.45, uProgress) * (1.0 - smoothstep(0.45, 0.55, uProgress));
     
-    // Mix Red based on density
+    // Mix Colors
     vec3 finalColor = mix(colorBlack, colorRed, density);
-    
-    // Add White Flash
-    finalColor += colorWhite * flash * density;
+    finalColor = mix(finalColor, colorWhite, flash * density); // Add flash on top
 
-    /* 7. Alpha Logic */
-    // Apply recession at end of animation
-    float recession = 1.0 - smoothstep(0.5, 1.0, uProgress);
-    float alpha = density * (0.6 + 0.4 * recession);
+    // 6. FINAL ALPHA
+    float alpha = density;
     
-    // Final safety clip to ensure 0.0 at edges
-    alpha *= edgeMask;
+    // Hard clip at edges to ensure NO BOX ever appears
+    if (dist > 0.45) alpha = 0.0;
 
     gl_FragColor = vec4(finalColor, alpha);
   }
 `
 
-// Easing Functions
+// Smooth Easing Functions
 function easeSineOut(t: number) {
   return 1 - Math.cos((t * Math.PI) / 2)
 }
@@ -116,11 +118,7 @@ export default function CureSequenceShader({
   const startTimeRef = useRef<number | null>(null)
   const cureCompleteFired = useRef(false)
   
-  /* 
-     GEOMETRY FIX: 
-     Make the plane larger than the screen (1.5x).
-     This pushes the square edges far away from the text.
-  */
+  // Keep the plane large to avoid box edges, but we control size in shader
   const planeWidth = viewport.width * 1.5
   const planeHeight = viewport.height * 1.5
 
@@ -128,7 +126,6 @@ export default function CureSequenceShader({
     () => ({
       uProgress: { value: 0 },
       uTime: { value: 0 },
-      uSpeed: { value: 0.15 }, // Slightly faster liquid movement
     }),
     []
   )
