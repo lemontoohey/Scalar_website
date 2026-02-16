@@ -58,11 +58,13 @@ const fragmentShader = `
     vec2 center = vUv - 0.5;
     float dist = length(center);
     
-    /* THE FIX:
-       Distance to edge is 0.5. We must fade to 0.0 BEFORE 0.5.
-       We smoothstep from 0.0 to 0.45. Anything past 0.45 is pure black.
-    */
-    float radialMask = 1.0 - smoothstep(0.0, 0.45, dist);
+    /* Re-enable Expansion: mist grows from 0 to max (0.45) as animation plays.
+       Cap at 0.48 to avoid square edges (distance to edge is 0.5). */
+    float expandT = smoothstep(0.0, 0.1, uProgress);
+    float currentRadius = min(0.45 * expandT, 0.48);
+    
+    /* Dynamic mask: soft falloff from center, uses expanding radius */
+    float radialMask = 1.0 - smoothstep(currentRadius * 0.5, currentRadius, dist);
     
     /* 2. Mist Texture */
     // Make the noise move slowly with time
@@ -81,22 +83,18 @@ const fragmentShader = `
     vec3 colorRed = vec3(1.0, 0.2, 0.25); // Boosted Red
     vec3 colorHot = vec3(1.0, 0.95, 0.9); // White hot center
     
-    /* 4. Cure Flash Logic */
-    // Flash white when uProgress hits ~0.5
+    /* 4. Cure Flash Logic - white flash at peak of animation */
     float flash = smoothstep(0.4, 0.5, uProgress) * (1.0 - smoothstep(0.5, 0.6, uProgress));
     
-    // Mix Colors based on density
+    // Mix Colors: red base, then blend to white at flash peak
     vec3 finalColor = mix(colorBlack, colorRed, density);
-    
-    // Add the White Hot flash
-    finalColor = mix(finalColor, colorHot, flash + (density * density * 0.3));
+    finalColor = mix(finalColor, colorHot, flash * (0.9 + 0.1 * density));
     
     /* 5. Alpha/Opacity Logic */
-    // Ensure the edges are absolutely 0 alpha
     float alpha = density;
     
-    // Fade out based on distance to ensure no hard box
-    alpha *= (1.0 - smoothstep(0.35, 0.5, dist));
+    // Box fix: never exceed 0.48 (distance to edge is 0.5)
+    alpha *= (1.0 - smoothstep(currentRadius, 0.48, dist));
     
     // Handle the fade out at end of animation
     float recession = 1.0 - smoothstep(0.6, 1.0, uProgress);
