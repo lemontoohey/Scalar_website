@@ -76,14 +76,15 @@ const fragmentShader = `
     // 4. COLORS
     vec3 colorBlack = vec3(0.0);
     vec3 colorRed = vec3(1.0, 0.25, 0.3); // Deep Red
-    vec3 colorWhite = vec3(1.0, 0.95, 0.9); // White Hot
+    vec3 colorWhite = vec3(1.0, 1.0, 1.0); // Pure White
 
-    // 5. FLASH LOGIC
-    // Flash happens at peak expansion (~0.45 progress)
-    float flash = smoothstep(0.4, 0.45, uProgress) * (1.0 - smoothstep(0.5, 0.6, uProgress));
-    
-    vec3 finalColor = mix(colorBlack, colorRed, density);
-    finalColor = mix(finalColor, colorWhite, flash * density);
+    // 5. FLASH LOGIC (THE FIX)
+    // At 0.45 progress, flashStrength hits 1.0 so White overrides Red completely.
+    float flashStrength = smoothstep(0.4, 0.45, uProgress) * (1.0 - smoothstep(0.45, 0.55, uProgress));
+    flashStrength = clamp(flashStrength * 2.0, 0.0, 1.0);
+
+    vec3 baseColor = mix(colorBlack, colorRed, density);
+    vec3 finalColor = mix(baseColor, colorWhite, flashStrength);
 
     // 6. FINAL ALPHA (Fade Out)
     // Fade out smoothly at the end
