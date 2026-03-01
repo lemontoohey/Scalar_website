@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useMemo, useState } from 'react'
+import { useRef, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -108,7 +108,6 @@ export default function CureSequenceShader({
 }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const { viewport } = useThree()
-  const [progress, setProgress] = useState(0)
   const startTimeRef = useRef<number | null>(null)
   const cureCompleteFired = useRef(false)
   
@@ -127,9 +126,10 @@ export default function CureSequenceShader({
   useFrame((state) => {
     if (startTimeRef.current === null) startTimeRef.current = state.clock.elapsedTime
     const elapsedMs = (state.clock.elapsedTime - startTimeRef.current) * 1000
-    const rawProgress = Math.min(elapsedMs / DURATION_MS, 1)
+    const rawProgress = Math.min(elapsedMs / DURATION_MS, 1.0)
 
-    const phaseSplit = 0.444 
+    // Calculate easing purely in JS without triggering React re-renders
+    const phaseSplit = 0.444
     let eased = 0
     if (rawProgress < phaseSplit) {
       const t = rawProgress / phaseSplit
@@ -138,14 +138,15 @@ export default function CureSequenceShader({
       const t = (rawProgress - phaseSplit) / (1 - phaseSplit)
       eased = phaseSplit + (1 - phaseSplit) * easeExponentialIn(t)
     }
-    setProgress(eased)
 
-    if (rawProgress >= 1 && !cureCompleteFired.current) {
+    // Fire completion callback ONCE
+    if (rawProgress >= 1.0 && !cureCompleteFired.current) {
       cureCompleteFired.current = true
-      onCureComplete?.()
+      if (onCureComplete) onCureComplete()
     }
 
-    if (meshRef.current && uniforms) {
+    // Mutate uniforms directly (Critical for Three.js performance)
+    if (meshRef.current) {
       const material = meshRef.current.material as THREE.ShaderMaterial
       if (material && material.uniforms) {
         material.uniforms.uTime.value = state.clock.elapsedTime

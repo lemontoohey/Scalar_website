@@ -67,6 +67,8 @@ export default function HybridCursor() {
       <motion.div
         className="absolute top-0 left-0 rounded-full"
         style={{
+          border: 'none',
+          WebkitMaskImage: '-webkit-radial-gradient(white, black)',
           backdropFilter: 'blur(4px) brightness(1.1) contrast(1.2)',
           WebkitBackdropFilter: 'blur(4px) brightness(1.1) contrast(1.2)',
         }}

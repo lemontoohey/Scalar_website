@@ -105,9 +105,10 @@ export default function HeroView({
 
       {/* Layer 2 (Middle): Hero text - center (no outline on mobile) */}
       <section className="hero-text-block relative min-h-screen flex flex-col items-center justify-center overflow-hidden pointer-events-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
-        <div className="relative text-center" style={{ zIndex: 50, outline: 'none', background: 'transparent' }}>
+        <div className="relative text-center pointer-events-auto" style={{ zIndex: 50, outline: 'none', background: 'transparent' }}>
           <div className="space-y-4">
             <motion.h1
+              data-thermal-hover
               className="hero-title text-7xl md:text-9xl font-light tracking-[0.4em] text-[#FCFBF8] outline-none select-none"
               style={{
                 fontFamily: 'var(--font-archivo)',
@@ -125,6 +126,7 @@ export default function HeroView({
               Scalar
             </motion.h1>
             <motion.p
+              data-thermal-hover
               className="text-lg md:text-xl font-light tracking-[0.6em] lowercase text-[#FCFBF8]/80 mt-4"
               style={{
                 fontFamily: 'var(--font-archivo)',
