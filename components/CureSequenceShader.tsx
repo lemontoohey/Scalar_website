@@ -4,7 +4,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const DURATION_MS = 3716 // ~1650ms to 0.444 peak (1650/0.444)
+const DURATION_MS = 3716
 
 const vertexShader = `
   varying vec2 vUv;
@@ -46,46 +46,37 @@ const fragmentShader = `
     vec2 center = vUv - 0.5;
     float dist = length(center);
 
-    // 1. THE HEAT CURVE
-    float heatUp = smoothstep(0.10, 0.444, uProgress);
-    float coolDown = 1.0 - smoothstep(0.444, 0.60, uProgress);
-    float peakIntensity = heatUp * coolDown;
+    // 1. THE HEAT CURVE (Flash peaks at 0.444)
+    float heat = smoothstep(0.1, 0.444, uProgress) * (1.0 - smoothstep(0.444, 0.6, uProgress));
 
-    // 2. RADIUS EXPANSION
-    float baseRadius = mix(0.2, 0.35, uProgress);
-    float currentRadius = baseRadius + (peakIntensity * 0.15);
+    // 2. EXPANDING RADIUS
+    float baseRadius = mix(0.15, 0.35, uProgress); // Base mist grows over time and stays big
+    float currentRadius = baseRadius + (heat * 0.2); // Expands massively during flash
 
-    // 3. THE MIST
-    float mist = fbm(vUv * 3.0 - uTime * 0.15);
-    float mask = 1.0 - smoothstep(currentRadius * 0.2, currentRadius, dist);
-    float coreMask = 1.0 - smoothstep(0.0, currentRadius * 0.4, dist);
+    // 3. MIST & MASKS
+    float mist = fbm(vUv * 3.5 - uTime * 0.2);
+    float mask = 1.0 - smoothstep(currentRadius * 0.3, currentRadius, dist);
+    float coreMask = 1.0 - smoothstep(0.0, currentRadius * 0.5, dist);
 
     // 4. COLORS
     vec3 colorRed = vec3(0.9, 0.05, 0.1);
-    vec3 colorBulb = vec3(1.0, 0.95, 0.7);
+    vec3 colorBulb = vec3(1.0, 0.95, 0.8); // Warm lightbulb
 
-    // Base red mist (Stays alive forever)
-    vec3 baseColor = colorRed * max(mist, 0.15) * 1.5;
+    vec3 baseColor = colorRed * max(mist, 0.2) * 1.5;
+    vec3 finalColor = mix(baseColor, colorBulb, clamp(heat * coreMask * 1.8, 0.0, 1.0));
 
-    // Mix in white bulb at peak
-    vec3 finalColor = mix(baseColor, colorBulb, clamp(peakIntensity * coreMask * 2.0, 0.0, 1.0));
+    // 5. ALPHA
+    float alpha = (mask * max(mist, 0.2)) + (heat * coreMask * 0.8);
+    alpha *= 1.5; // Overall opacity boost
+    alpha *= smoothstep(0.0, 0.1, uProgress); // Fade in at start
 
-    // 5. ALPHA CALCULATION
-    float density = mask * max(mist, 0.2);
-    // Alpha rests at density, but spikes during peak
-    float alpha = density * mix(0.8, 2.0, peakIntensity);
-
-    // Fade in at the very beginning
-    alpha *= smoothstep(0.0, 0.1, uProgress);
-    // CRITICAL FIX: Removed fade-out logic so the red mist stays visible forever.
-
+    // Safety bound to prevent hard box edges
     if (dist > 0.48) alpha = 0.0;
 
-    gl_FragColor = vec4(finalColor * alpha, alpha);
+    gl_FragColor = vec4(finalColor, clamp(alpha, 0.0, 1.0));
   }
 `
 
-// Easing Functions
 function easeSineOut(t: number) {
   return 1 - Math.cos((t * Math.PI) / 2)
 }
@@ -93,17 +84,11 @@ function easeExponentialIn(t: number) {
   return t <= 0 ? 0 : Math.pow(2, 10 * (t - 1))
 }
 
-export default function CureSequenceShader({
-  onCureComplete,
-}: {
-  onCureComplete?: () => void
-}) {
-  const meshRef = useRef<THREE.Mesh>(null)
+export default function CureSequenceShader({ onCureComplete }: { onCureComplete?: () => void }) {
   const { viewport } = useThree()
-  const startTimeRef = useRef<number | null>(null)
+  const timeRef = useRef(0)
   const cureCompleteFired = useRef(false)
-  
-  // Large plane to keep edges far away
+
   const planeWidth = viewport.width * 1.5
   const planeHeight = viewport.height * 1.5
 
@@ -115,40 +100,34 @@ export default function CureSequenceShader({
     []
   )
 
-  useFrame((state) => {
-    if (startTimeRef.current === null) startTimeRef.current = state.clock.elapsedTime
-    const elapsedMs = (state.clock.elapsedTime - startTimeRef.current) * 1000
+  useFrame((_, delta) => {
+    // Bulletproof clock accumulation
+    timeRef.current += delta
+    uniforms.uTime.value = timeRef.current
+
+    const elapsedMs = timeRef.current * 1000
     const rawProgress = Math.min(elapsedMs / DURATION_MS, 1.0)
 
-    // Calculate easing purely in JS without triggering React re-renders
     const phaseSplit = 0.444
     let eased = 0
     if (rawProgress < phaseSplit) {
-      const t = rawProgress / phaseSplit
-      eased = phaseSplit * easeSineOut(t)
+      eased = phaseSplit * easeSineOut(rawProgress / phaseSplit)
     } else {
-      const t = (rawProgress - phaseSplit) / (1 - phaseSplit)
-      eased = phaseSplit + (1 - phaseSplit) * easeExponentialIn(t)
+      eased =
+        phaseSplit +
+        (1 - phaseSplit) * easeExponentialIn((rawProgress - phaseSplit) / (1 - phaseSplit))
     }
 
-    // Fire completion callback ONCE
+    uniforms.uProgress.value = eased
+
     if (rawProgress >= 1.0 && !cureCompleteFired.current) {
       cureCompleteFired.current = true
       if (onCureComplete) onCureComplete()
     }
-
-    // Mutate uniforms directly (Critical for Three.js performance)
-    if (meshRef.current) {
-      const material = meshRef.current.material as THREE.ShaderMaterial
-      if (material && material.uniforms) {
-        material.uniforms.uTime.value = state.clock.elapsedTime
-        material.uniforms.uProgress.value = eased
-      }
-    }
   })
 
   return (
-    <mesh ref={meshRef} position={[0, 0, -1]}>
+    <mesh position={[0, 0, -1]}>
       <planeGeometry args={[planeWidth, planeHeight, 64, 64]} />
       <shaderMaterial
         vertexShader={vertexShader}
@@ -156,7 +135,7 @@ export default function CureSequenceShader({
         uniforms={uniforms}
         transparent={true}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={THREE.NormalBlending}
       />
     </mesh>
   )
