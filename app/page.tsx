@@ -21,7 +21,7 @@ const HeroView = dynamic(() => import('@/components/HeroView'), { ssr: false })
 export type PageState = 'hero' | 'gallery'
 export type ViewMode = 'cinema' | 'innovation'
 
-const CURE_THUD_MS = 3700
+const CURE_THUD_MS = 1650 // Synchronized with the 0.444 shader peak
 
 export default function Home() {
   const [state, setState] = useState<PageState>('hero')

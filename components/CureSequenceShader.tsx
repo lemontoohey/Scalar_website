@@ -4,7 +4,7 @@ import { useRef, useMemo, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const DURATION_MS = 3700
+const DURATION_MS = 3716 // ~1650ms to 0.444 peak (1650/0.444)
 
 const vertexShader = `
   varying vec2 vUv;
@@ -75,14 +75,14 @@ const fragmentShader = `
 
     // 4. COLORS
     vec3 colorBlack = vec3(0.0);
-    vec3 colorRed = vec3(1.0, 0.25, 0.3); // Deep Red
-    vec3 colorWhite = vec3(1.0, 1.0, 1.0); // Pure White
+    vec3 colorRed = vec3(1.0, 0.15, 0.2); // Deep Scalar Red
+    vec3 colorWhite = vec3(1.0, 0.95, 0.85); // Lightbulb off-white / warm tungsten
 
-    // 5. FLASH LOGIC (THE FIX)
-    // Eased uProgress peaks at 0.444 during expansion, so flash must cover that range.
-    // Ramp 0.32->0.42, hold until 0.48, fade 0.48->0.58
-    float flashStrength = smoothstep(0.32, 0.42, uProgress) * (1.0 - smoothstep(0.48, 0.58, uProgress));
-    flashStrength = clamp(flashStrength * 2.0, 0.0, 1.0);
+    // 5. FLASH LOGIC (SYNCHRONIZED)
+    // Ramps up rapidly to peak precisely at 0.444 (1650ms), then fades back to red mist
+    float flashStrength = smoothstep(0.30, 0.444, uProgress) * (1.0 - smoothstep(0.444, 0.60, uProgress));
+    flashStrength = pow(flashStrength, 0.8); // Steeper curve for explosive feel
+    flashStrength = clamp(flashStrength * 2.5, 0.0, 1.0); // Push hard to the off-white
 
     vec3 baseColor = mix(colorBlack, colorRed, density);
     vec3 finalColor = mix(baseColor, colorWhite, flashStrength);
