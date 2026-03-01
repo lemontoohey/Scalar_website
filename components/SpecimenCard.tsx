@@ -1,9 +1,47 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Specimen } from '@/constants/specimens'
 import { playThud } from '@/hooks/useSound'
+
+const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_//'
+const SCRAMBLE_DURATION_MS = 400
+const SCRAMBLE_INTERVAL_MS = 30
+
+function ScrambleText({ text, trigger }: { text: string; trigger: boolean }) {
+  const [displayText, setDisplayText] = useState(text)
+
+  useEffect(() => {
+    if (!trigger) {
+      setDisplayText(text)
+      return
+    }
+    let iterations = 0
+    const totalFrames = Math.ceil(SCRAMBLE_DURATION_MS / SCRAMBLE_INTERVAL_MS)
+    const increment = Math.max(1, text.length / totalFrames)
+
+    const interval = setInterval(() => {
+      setDisplayText(
+        text
+          .split('')
+          .map((char, index) => {
+            if (index < iterations) return char
+            return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)]
+          })
+          .join('')
+      )
+      iterations += increment
+      if (iterations >= text.length) {
+        clearInterval(interval)
+        setDisplayText(text)
+      }
+    }, SCRAMBLE_INTERVAL_MS)
+    return () => clearInterval(interval)
+  }, [text, trigger])
+
+  return <>{displayText}</>
+}
 
 function LightRipple({
   mousePos,
@@ -62,7 +100,12 @@ export default function SpecimenCard({
         }
       }}
       className="relative aspect-square rounded-lg overflow-hidden cursor-pointer border border-[#FCFBF8]/10"
-      style={{ borderRadius: '8px', transformStyle: 'preserve-3d' }}
+      style={{
+        borderRadius: '8px',
+        transformStyle: 'preserve-3d',
+        boxShadow:
+          'inset 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 0 rgba(255,255,255,0.04)',
+      }}
       onMouseMove={(e) => {
         const rect = e.currentTarget.getBoundingClientRect()
         setMousePos({
@@ -75,6 +118,7 @@ export default function SpecimenCard({
       whileHover={{
         scale: 1.05,
         z: 20,
+        boxShadow: `0px 20px 50px -10px ${specimen.color}80, 0px 0px 20px 0px ${specimen.color}40, inset 0 0 0 1px rgba(255,255,255,0.12), inset 0 1px 0 0 rgba(255,255,255,0.15)`,
       }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
@@ -91,18 +135,27 @@ export default function SpecimenCard({
         {isHovering && <LightRipple mousePos={mousePos} color={specimen.color} />}
       </AnimatePresence>
 
-      <div className="absolute bottom-3 left-3 right-3 z-10">
+      <motion.div
+        className="absolute bottom-3 left-3 right-3 z-10"
+        style={{
+          transform: `translate(${(mousePos.x - 0.5) * 15}px, ${(mousePos.y - 0.5) * 15}px)`,
+          transition: 'transform 0.1s ease-out',
+        }}
+      >
         <div
           className="uppercase font-mono text-[10px] tracking-[0.15em]"
           style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300, color: textColor }}
         >
-          {specimen.technicalCode} // RI_{specimen.index}
+          <ScrambleText
+            text={`${specimen.technicalCode} // RI_${specimen.index}`}
+            trigger={isHovering}
+          />
         </div>
         <div
           className="text-sm font-light mt-1"
           style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300, color: textColor }}
         >
-          {specimen.name}
+          <ScrambleText text={specimen.name} trigger={isHovering} />
         </div>
         <button
           type="button"
@@ -117,7 +170,7 @@ export default function SpecimenCard({
         >
           Initiate Procurement
         </button>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
