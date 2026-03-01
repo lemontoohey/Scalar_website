@@ -3,9 +3,22 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
+function useIsTouchDevice(): boolean {
+  const [isTouch, setIsTouch] = useState(true)
+  useEffect(() => {
+    const check =
+      'ontouchstart' in window ||
+      navigator.maxTouchPoints > 0 ||
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches
+    setIsTouch(check)
+  }, [])
+  return isTouch
+}
+
 export default function ThermalCursor() {
   const [mousePosition, setMousePosition] = useState({ x: -100, y: -100 })
   const [isHovering, setIsHovering] = useState(false)
+  const isTouch = useIsTouchDevice()
 
   useEffect(() => {
     const updateMousePosition = (e: MouseEvent) => {
@@ -14,11 +27,20 @@ export default function ThermalCursor() {
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement
+
+      // Bulletproof hit detection for all interactive elements
       const isInteractive =
         target.tagName === 'BUTTON' ||
         target.tagName === 'A' ||
+        target.tagName === 'H1' ||
+        target.tagName === 'H2' ||
+        target.tagName === 'H3' ||
+        target.getAttribute('role') === 'button' ||
+        target.classList?.contains('cursor-pointer') ||
         !!target.closest('button') ||
         !!target.closest('a') ||
+        !!target.closest('[role="button"]') ||
+        !!target.closest('.cursor-pointer') ||
         target.hasAttribute('data-thermal-hover') ||
         !!target.closest('[data-thermal-hover]')
 
@@ -34,14 +56,15 @@ export default function ThermalCursor() {
     }
   }, [])
 
+  if (isTouch) return null
+
   const variants = {
     default: {
       height: 8,
       width: 8,
       x: mousePosition.x - 4,
       y: mousePosition.y - 4,
-      background:
-        'radial-gradient(circle, rgba(252, 251, 248, 0.8) 0%, rgba(252, 251, 248, 0) 70%)',
+      background: 'radial-gradient(circle, rgba(252, 251, 248, 0.8) 0%, rgba(252, 251, 248, 0) 70%)',
       filter: 'blur(1px)',
       borderRadius: '50%',
       mixBlendMode: 'difference' as const,
@@ -50,18 +73,14 @@ export default function ThermalCursor() {
         mass: 0.1,
         stiffness: 800,
         damping: 35,
-        background: { duration: 0.5 },
-        filter: { duration: 0.5 },
-        borderRadius: { duration: 0.5 },
       },
     },
     hover: {
-      height: 64,
-      width: 64,
-      x: mousePosition.x - 32,
-      y: mousePosition.y - 32,
-      background:
-        'radial-gradient(circle, rgba(168, 0, 0, 0.6) 0%, rgba(168, 0, 0, 0) 70%)',
+      height: 120,
+      width: 120,
+      x: mousePosition.x - 60,
+      y: mousePosition.y - 60,
+      background: 'radial-gradient(circle, rgba(168, 0, 0, 0.6) 0%, rgba(168, 0, 0, 0) 70%)',
       filter: 'blur(12px)',
       borderRadius: [
         '50% 50%',
@@ -72,16 +91,14 @@ export default function ThermalCursor() {
       mixBlendMode: 'screen' as const,
       transition: {
         type: 'spring',
-        mass: 0.6,
-        stiffness: 200,
-        damping: 20,
+        mass: 0.4,
+        stiffness: 250,
+        damping: 25,
         borderRadius: {
           duration: 4,
           repeat: Infinity,
           ease: 'easeInOut',
         },
-        background: { duration: 0.5 },
-        filter: { duration: 0.5 },
       },
     },
   }

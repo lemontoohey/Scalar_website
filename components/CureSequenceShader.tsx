@@ -19,7 +19,6 @@ const fragmentShader = `
   uniform float uTime;
   varying vec2 vUv;
 
-  // --- SIMPLEX NOISE ---
   vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
   float snoise(vec2 v){
     const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
@@ -47,48 +46,41 @@ const fragmentShader = `
     vec2 center = vUv - 0.5;
     float dist = length(center);
 
-    // 1. THE HEAT CURVE (Peaks at 0.444 / 1650ms)
-    // Smooth ramp up, sharp cool down
+    // 1. THE HEAT CURVE
     float heatUp = smoothstep(0.10, 0.444, uProgress);
     float coolDown = 1.0 - smoothstep(0.444, 0.60, uProgress);
     float peakIntensity = heatUp * coolDown;
 
     // 2. RADIUS EXPANSION
-    // Starts small (0.15), swells massively at peak, settles to medium (0.25)
-    float baseRadius = mix(0.15, 0.25, uProgress);
+    float baseRadius = mix(0.2, 0.35, uProgress);
     float currentRadius = baseRadius + (peakIntensity * 0.15);
 
     // 3. THE MIST
-    float mist = fbm(vUv * 4.0 - uTime * 0.2);
-
-    // Smooth, feathered edge to prevent boxes
-    float mask = 1.0 - smoothstep(currentRadius * 0.1, currentRadius, dist);
-
-    // Inner core mask specifically for the bright lightbulb effect
-    float coreMask = 1.0 - smoothstep(0.0, currentRadius * 0.5, dist);
+    float mist = fbm(vUv * 3.0 - uTime * 0.15);
+    float mask = 1.0 - smoothstep(currentRadius * 0.2, currentRadius, dist);
+    float coreMask = 1.0 - smoothstep(0.0, currentRadius * 0.4, dist);
 
     // 4. COLORS
-    vec3 colorRed = vec3(0.8, 0.05, 0.1);
-    vec3 colorBulb = vec3(1.0, 0.95, 0.6); // Yellowish white
+    vec3 colorRed = vec3(0.9, 0.05, 0.1);
+    vec3 colorBulb = vec3(1.0, 0.95, 0.7);
 
-    // Base mist is red, multiplied by noise
-    vec3 baseColor = colorRed * max(mist, 0.2) * 1.5;
+    // Base red mist (Stays alive forever)
+    vec3 baseColor = colorRed * max(mist, 0.15) * 1.5;
 
-    // Mix in the bulb color based on peak intensity AND proximity to center
-    vec3 finalColor = mix(baseColor, colorBulb, clamp(peakIntensity * coreMask * 1.5, 0.0, 1.0));
+    // Mix in white bulb at peak
+    vec3 finalColor = mix(baseColor, colorBulb, clamp(peakIntensity * coreMask * 2.0, 0.0, 1.0));
 
     // 5. ALPHA CALCULATION
-    float density = mask * max(mist, 0.1);
-    float alpha = density * mix(0.5, 1.5, peakIntensity);
+    float density = mask * max(mist, 0.2);
+    // Alpha rests at density, but spikes during peak
+    float alpha = density * mix(0.8, 2.0, peakIntensity);
 
-    // Fade entire system in at start, out at end
+    // Fade in at the very beginning
     alpha *= smoothstep(0.0, 0.1, uProgress);
-    alpha *= 1.0 - smoothstep(0.7, 1.0, uProgress);
+    // CRITICAL FIX: Removed fade-out logic so the red mist stays visible forever.
 
-    // Strict circular cutoff to ensure no square geometry edges are ever visible
     if (dist > 0.48) alpha = 0.0;
 
-    // Output with premultiplied alpha for correct additive blending
     gl_FragColor = vec4(finalColor * alpha, alpha);
   }
 `
