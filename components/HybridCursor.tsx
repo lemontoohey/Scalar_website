@@ -30,8 +30,15 @@ export default function HybridCursor() {
       const isInteractive =
         target.tagName === 'BUTTON' ||
         target.tagName === 'A' ||
+        target.tagName === 'H1' ||
+        target.tagName === 'H2' ||
+        target.tagName === 'H3' ||
+        target.getAttribute('role') === 'button' ||
+        target.classList?.contains('cursor-pointer') ||
         !!target.closest('button') ||
         !!target.closest('a') ||
+        !!target.closest('[role="button"]') ||
+        !!target.closest('.cursor-pointer') ||
         target.hasAttribute('data-thermal-hover') ||
         !!target.closest('[data-thermal-hover]')
       setIsHovering(!!isInteractive)
@@ -58,7 +65,7 @@ export default function HybridCursor() {
     >
       {/* Layer 1: The Refractive Glass Lens */}
       <motion.div
-        className="absolute top-0 left-0 rounded-full border border-white/10"
+        className="absolute top-0 left-0 rounded-full"
         style={{
           backdropFilter: 'blur(4px) brightness(1.1) contrast(1.2)',
           WebkitBackdropFilter: 'blur(4px) brightness(1.1) contrast(1.2)',

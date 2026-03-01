@@ -19,13 +19,13 @@ const fragmentShader = `
   uniform float uTime;
   varying vec2 vUv;
 
+  // --- SIMPLEX NOISE ---
   vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
   float snoise(vec2 v){
     const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
     vec2 i  = floor(v + dot(v, C.yy) );
     vec2 x0 = v -   i + dot(i, C.xx);
-    vec2 i1;
-    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+    vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
     vec4 x12 = x0.xyxy + C.xxzz;
     x12.xy -= i1;
     i = mod(i, 289.0);
@@ -48,42 +48,47 @@ const fragmentShader = `
     float dist = length(center);
 
     // 1. THE HEAT CURVE (Peaks at 0.444 / 1650ms)
-    float heatUp = smoothstep(0.15, 0.444, uProgress);
-    float coolDown = 1.0 - smoothstep(0.444, 0.65, uProgress);
+    // Smooth ramp up, sharp cool down
+    float heatUp = smoothstep(0.10, 0.444, uProgress);
+    float coolDown = 1.0 - smoothstep(0.444, 0.60, uProgress);
     float peakIntensity = heatUp * coolDown;
-    peakIntensity = pow(peakIntensity, 0.8); // Punchy flash
 
-    // 2. DYNAMIC EXPANDING RADIUS
-    // Base size is 0.2. At peak flash, it rapidly inflates to 0.5, then shrinks back.
-    float currentRadius = 0.2 + (peakIntensity * 0.3) + (uProgress * 0.1);
+    // 2. RADIUS EXPANSION
+    // Starts small (0.15), swells massively at peak, settles to medium (0.25)
+    float baseRadius = mix(0.15, 0.25, uProgress);
+    float currentRadius = baseRadius + (peakIntensity * 0.15);
 
-    // 3. MASK & MIST
-    float mask = 1.0 - smoothstep(currentRadius * 0.2, currentRadius, dist);
-    float mist = fbm(vUv * 3.5 - uTime * 0.15); // Negative time makes it flow upward
-    float density = mask * max(mist, 0.0);
-    density = pow(density, 1.2) * 3.0; // Thicken the smoke
+    // 3. THE MIST
+    float mist = fbm(vUv * 4.0 - uTime * 0.2);
 
-    // 4. COLORS (Deep Red to Lightbulb)
-    vec3 colorRed = vec3(0.8, 0.02, 0.05); // Deep pure red
-    vec3 colorBulb = vec3(1.0, 0.95, 0.7); // Bright yellowish-white
+    // Smooth, feathered edge to prevent boxes
+    float mask = 1.0 - smoothstep(currentRadius * 0.1, currentRadius, dist);
 
-    // Overpower the red completely at the peak
-    vec3 finalColor = mix(colorRed, colorBulb, clamp(peakIntensity * 1.8, 0.0, 1.0));
+    // Inner core mask specifically for the bright lightbulb effect
+    float coreMask = 1.0 - smoothstep(0.0, currentRadius * 0.5, dist);
 
-    // 5. OPACITY BOOST
-    // Additive blending washes out whites if alpha is low.
-    // We force alpha to 1.0 at the peak so it visually "blinds" the screen.
-    float baseAlpha = density;
-    baseAlpha += peakIntensity * mask * 0.8;
+    // 4. COLORS
+    vec3 colorRed = vec3(0.8, 0.05, 0.1);
+    vec3 colorBulb = vec3(1.0, 0.95, 0.6); // Yellowish white
 
-    // Fade in at start, fade out at end
-    float intro = smoothstep(0.0, 0.1, uProgress);
-    float outro = 1.0 - smoothstep(0.7, 1.0, uProgress);
-    float alpha = baseAlpha * intro * outro;
+    // Base mist is red, multiplied by noise
+    vec3 baseColor = colorRed * max(mist, 0.2) * 1.5;
 
-    if (dist > 0.48) alpha = 0.0; // Safety boundary
+    // Mix in the bulb color based on peak intensity AND proximity to center
+    vec3 finalColor = mix(baseColor, colorBulb, clamp(peakIntensity * coreMask * 1.5, 0.0, 1.0));
 
-    // Multiply color by alpha for clean Additive Blending
+    // 5. ALPHA CALCULATION
+    float density = mask * max(mist, 0.1);
+    float alpha = density * mix(0.5, 1.5, peakIntensity);
+
+    // Fade entire system in at start, out at end
+    alpha *= smoothstep(0.0, 0.1, uProgress);
+    alpha *= 1.0 - smoothstep(0.7, 1.0, uProgress);
+
+    // Strict circular cutoff to ensure no square geometry edges are ever visible
+    if (dist > 0.48) alpha = 0.0;
+
+    // Output with premultiplied alpha for correct additive blending
     gl_FragColor = vec4(finalColor * alpha, alpha);
   }
 `
