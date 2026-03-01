@@ -68,7 +68,7 @@ const fragmentShader = `
     // 5. ALPHA
     float alpha = (mask * max(mist, 0.2)) + (heat * coreMask * 0.8);
     alpha *= 1.5; // Overall opacity boost
-    alpha *= smoothstep(0.0, 0.1, uProgress); // Fade in at start
+    // No fade-in (working 89d64af had visible mist from frame 1)
 
     // Safety bound to prevent hard box edges
     if (dist > 0.48) alpha = 0.0;
@@ -87,6 +87,7 @@ function easeExponentialIn(t: number) {
 export default function CureSequenceShader({ onCureComplete }: { onCureComplete?: () => void }) {
   const { viewport } = useThree()
   const cureCompleteFired = useRef(false)
+  const startTimeRef = useRef<number | null>(null)
 
   // Avoid 0-size plane when viewport not yet measured (e.g. first frame)
   const planeWidth = Math.max(viewport.width * 1.5, 10)
@@ -101,9 +102,10 @@ export default function CureSequenceShader({ onCureComplete }: { onCureComplete?
   )
 
   useFrame((state) => {
-    // Use clock.elapsedTime - reliable even when delta is 0 on first frame or tab backgrounded
-    const elapsed = state.clock.elapsedTime
-    uniforms.uTime.value = elapsed
+    // Start from 0 when shader mounts (matches working 89d64af)
+    if (startTimeRef.current === null) startTimeRef.current = state.clock.elapsedTime
+    const elapsed = state.clock.elapsedTime - startTimeRef.current
+    uniforms.uTime.value = state.clock.elapsedTime
 
     const elapsedMs = elapsed * 1000
     const rawProgress = Math.min(elapsedMs / DURATION_MS, 1.0)
@@ -135,7 +137,7 @@ export default function CureSequenceShader({ onCureComplete }: { onCureComplete?
         uniforms={uniforms}
         transparent={true}
         depthWrite={false}
-        blending={THREE.NormalBlending}
+        blending={THREE.AdditiveBlending}
       />
     </mesh>
   )

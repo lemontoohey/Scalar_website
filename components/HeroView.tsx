@@ -1,6 +1,5 @@
 'use client'
 
-import { Suspense } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 
@@ -97,13 +96,10 @@ export default function HeroView({
             />
           }
         >
-          {/* Mist renders immediately; LensText gets its own Suspense so font load doesn't block mist */}
           <CureSequenceShader />
-          <Suspense fallback={null}>
-            <LensText position={[0, 0.3, 0]} fontSize={2.5}>
-              Scalar
-            </LensText>
-          </Suspense>
+          <LensText position={[0, 0.3, 0]} fontSize={2.5}>
+            Scalar
+          </LensText>
         </ClientCanvas>
       </div>
 
