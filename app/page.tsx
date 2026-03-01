@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Specimen } from '@/constants/specimens'
-import { playThud, playLensClick, initAudio } from '@/hooks/useSound'
+import { playThud, playLensClick } from '@/hooks/useSound'
 import GlobalNav from '@/components/GlobalNav'
 import MetadataOverlays from '@/components/MetadataOverlays'
 import HardwareHandshake from '@/components/HardwareHandshake'
@@ -24,7 +24,6 @@ export type ViewMode = 'cinema' | 'innovation'
 const CURE_THUD_MS = 1650 // Synchronized with the 0.444 shader peak
 
 export default function Home() {
-  const [hasEntered, setHasEntered] = useState(false)
   const [state, setState] = useState<PageState>('hero')
   const [viewMode, setViewMode] = useState<ViewMode>('cinema')
   const [isCured, setIsCured] = useState(false)
@@ -36,13 +35,13 @@ export default function Home() {
   const [viewingSpecimen, setViewingSpecimen] = useState<Specimen | null>(null)
 
   useEffect(() => {
-    if (state !== 'hero' || !hasEntered) return
+    if (state !== 'hero') return
     const t = setTimeout(() => {
       setIsCured(true)
       playThud()
     }, CURE_THUD_MS)
     return () => clearTimeout(t)
-  }, [state, hasEntered, mistKey])
+  }, [state, mistKey])
 
   const resetSystem = useCallback(() => {
     setIsCured(false)
@@ -77,22 +76,6 @@ export default function Home() {
   return (
     <main className="min-h-[100dvh] min-h-screen bg-black" style={{ backgroundColor: '#000502' }}>
       <AtmosphericAudio />
-      {/* Entry Gate: unlocks AudioContext via user gesture, starts shader + thud in sync */}
-      {!hasEntered && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#000502]">
-          <button
-            type="button"
-            onClick={() => {
-              initAudio()
-              setHasEntered(true)
-            }}
-            className="font-mono text-xs md:text-sm tracking-[0.5em] text-[#FCFBF8]/60 hover:text-[#FCFBF8] border border-[#FCFBF8]/20 hover:border-[#FCFBF8]/40 px-8 py-4 transition-colors duration-300"
-            style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
-          >
-            [ INITIATE_SEQUENCE ]
-          </button>
-        </div>
-      )}
       {/* Top-left Scalar: only on non-landing pages (gallery, innovation, modal) to guide back */}
       {(state !== 'hero' || viewMode === 'innovation' || viewingSpecimen !== null || procurementOpen) && (
         <button
@@ -111,7 +94,7 @@ export default function Home() {
       <ScanningLine />
       <GlobalNav onInnovationClick={() => setViewMode('innovation')} />
 
-      {state === 'hero' && hasEntered && (
+      {state === 'hero' && (
         <HeroView
           key={mistKey}
           isCured={isCured}

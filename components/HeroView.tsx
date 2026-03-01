@@ -58,8 +58,8 @@ export default function HeroView({
       opacity: 1,
       y: 0,
       transition: {
-        delay: 0, // Immediate: hits exactly on isCured (flash peak + thud)
-        duration: 0.6,
+        delay: 0, // Immediate drop exactly at 1650ms peak
+        duration: 0.8,
         ease: [0.16, 1, 0.3, 1],
       },
     },

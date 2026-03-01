@@ -75,21 +75,27 @@ const fragmentShader = `
 
     // 4. COLORS
     vec3 colorBlack = vec3(0.0);
-    vec3 colorRed = vec3(1.0, 0.15, 0.2); // Deep Scalar Red
-    vec3 colorWhite = vec3(1.0, 0.95, 0.85); // Lightbulb off-white / warm tungsten
+    vec3 colorRed = vec3(0.8, 0.05, 0.1); // Subtle deep red mist
+    vec3 colorBulb = vec3(1.0, 0.95, 0.65); // Warm yellowish-white lightbulb
 
-    // 5. FLASH LOGIC (SYNCHRONIZED)
-    // Ramps up rapidly to peak precisely at 0.444 (1650ms), then fades back to red mist
-    float flashStrength = smoothstep(0.30, 0.444, uProgress) * (1.0 - smoothstep(0.444, 0.60, uProgress));
-    flashStrength = pow(flashStrength, 0.8); // Steeper curve for explosive feel
-    flashStrength = clamp(flashStrength * 2.5, 0.0, 1.0); // Push hard to the off-white
+    // 5. THE HEAT/FLASH CURVE (SYNCHRONIZED)
+    // Peaks exactly at 0.444 (1650ms), exactly when the text drops.
+    float heatUp = smoothstep(0.15, 0.444, uProgress);
+    float coolDown = 1.0 - smoothstep(0.444, 0.70, uProgress);
+    float flashStrength = heatUp * coolDown;
+    
+    // Sharpen the peak so it ignites like a bulb
+    flashStrength = pow(flashStrength, 0.5); 
 
+    // Mix base mist
     vec3 baseColor = mix(colorBlack, colorRed, density);
-    vec3 finalColor = mix(baseColor, colorWhite, flashStrength);
+    
+    // Overpower the red with the yellowish-white bulb color at the peak
+    vec3 finalColor = mix(baseColor, colorBulb, clamp(flashStrength * 1.5, 0.0, 1.0));
 
     // 6. FINAL ALPHA (Fade Out)
-    // Fade out smoothly at the end
-    float recession = 1.0 - smoothstep(0.5, 0.9, uProgress);
+    // Keep the mist alive longer, fading out toward the very end
+    float recession = 1.0 - smoothstep(0.6, 1.0, uProgress);
     float alpha = density * recession;
     
     // 7. SAFETY CLIP (The Box Fix)
