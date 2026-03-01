@@ -4,7 +4,7 @@ import SmoothScroll from '@/components/SmoothScroll'
 import ScrollPhysicsProvider from '@/components/ScrollPhysicsProvider'
 import ClientErrorBoundary from '@/components/ClientErrorBoundary'
 import DiagnosticLine from '@/components/DiagnosticLine'
-import RefractiveCursor from '@/components/RefractiveCursor'
+import HybridCursor from '@/components/HybridCursor'
 import './globals.css'
 
 const archivo = Archivo({
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${archivo.variable} ${archivoNarrow.variable} bg-black text-white`}>
-        <RefractiveCursor />
+        <HybridCursor />
         <DiagnosticLine />
         <ClientErrorBoundary>
           <SmoothScroll>

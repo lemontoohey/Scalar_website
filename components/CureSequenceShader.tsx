@@ -17,15 +17,11 @@ const vertexShader = `
 const fragmentShader = `
   uniform float uProgress;
   uniform float uTime;
-  
   varying vec2 vUv;
 
-  // --- SIMPLEX NOISE ---
   vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-
   float snoise(vec2 v){
-    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
-             -0.577350269189626, 0.024390243902439);
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
     vec2 i  = floor(v + dot(v, C.yy) );
     vec2 x0 = v -   i + dot(i, C.xx);
     vec2 i1;
@@ -33,14 +29,12 @@ const fragmentShader = `
     vec4 x12 = x0.xyxy + C.xxzz;
     x12.xy -= i1;
     i = mod(i, 289.0);
-    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
-    + i.x + vec3(0.0, i1.x, 1.0 ));
+    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
     vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
     m = m*m ;
     return 130.0 * dot(m, vec3( dot(x0,p.x), dot(x12.xy,p.y), dot(x12.zw,p.z) ));
   }
 
-  // --- FBM ---
   float fbm(vec2 p) {
     float f = 0.0;
     f += 0.500 * snoise(p); p *= 2.02;
@@ -53,57 +47,44 @@ const fragmentShader = `
     vec2 center = vUv - 0.5;
     float dist = length(center);
 
-    // 1. DYNAMIC RADIUS (The Animation Fix)
-    // Instead of a static number, we grow the size based on uProgress.
-    // Starts at 0.0, grows to 0.4.
-    float growth = smoothstep(0.0, 0.3, uProgress); 
-    float currentRadius = 0.4 * growth;
-
-    // 2. THE MASK
-    // Create a soft circle that expands outward.
-    float mask = 1.0 - smoothstep(currentRadius * 0.4, currentRadius, dist);
-
-    // 3. THE MIST
-    // Silky noise moving with time.
-    float mist = fbm(vUv * 3.5 + uTime * 0.2);
-    
-    // Combine mask and mist
-    float density = mask * mist;
-    
-    // Boost density to make it visible
-    density = pow(density, 1.2) * 2.5;
-
-    // 4. COLORS
-    vec3 colorBlack = vec3(0.0);
-    vec3 colorRed = vec3(0.8, 0.05, 0.1); // Subtle deep red mist
-    vec3 colorBulb = vec3(1.0, 0.95, 0.65); // Warm yellowish-white lightbulb
-
-    // 5. THE HEAT/FLASH CURVE (SYNCHRONIZED)
-    // Peaks exactly at 0.444 (1650ms), exactly when the text drops.
+    // 1. THE HEAT CURVE (Peaks at 0.444 / 1650ms)
     float heatUp = smoothstep(0.15, 0.444, uProgress);
-    float coolDown = 1.0 - smoothstep(0.444, 0.70, uProgress);
-    float flashStrength = heatUp * coolDown;
-    
-    // Sharpen the peak so it ignites like a bulb
-    flashStrength = pow(flashStrength, 0.5); 
+    float coolDown = 1.0 - smoothstep(0.444, 0.65, uProgress);
+    float peakIntensity = heatUp * coolDown;
+    peakIntensity = pow(peakIntensity, 0.8); // Punchy flash
 
-    // Mix base mist
-    vec3 baseColor = mix(colorBlack, colorRed, density);
-    
-    // Overpower the red with the yellowish-white bulb color at the peak
-    vec3 finalColor = mix(baseColor, colorBulb, clamp(flashStrength * 1.5, 0.0, 1.0));
+    // 2. DYNAMIC EXPANDING RADIUS
+    // Base size is 0.2. At peak flash, it rapidly inflates to 0.5, then shrinks back.
+    float currentRadius = 0.2 + (peakIntensity * 0.3) + (uProgress * 0.1);
 
-    // 6. FINAL ALPHA (Fade Out)
-    // Keep the mist alive longer, fading out toward the very end
-    float recession = 1.0 - smoothstep(0.6, 1.0, uProgress);
-    float alpha = density * recession;
-    
-    // 7. SAFETY CLIP (The Box Fix)
-    // Absolute hard cut-off before the geometry edge (0.5)
-    // This ensures NO BOX ever appears, regardless of animation size.
-    if (dist > 0.48) alpha = 0.0;
+    // 3. MASK & MIST
+    float mask = 1.0 - smoothstep(currentRadius * 0.2, currentRadius, dist);
+    float mist = fbm(vUv * 3.5 - uTime * 0.15); // Negative time makes it flow upward
+    float density = mask * max(mist, 0.0);
+    density = pow(density, 1.2) * 3.0; // Thicken the smoke
 
-    gl_FragColor = vec4(finalColor, alpha);
+    // 4. COLORS (Deep Red to Lightbulb)
+    vec3 colorRed = vec3(0.8, 0.02, 0.05); // Deep pure red
+    vec3 colorBulb = vec3(1.0, 0.95, 0.7); // Bright yellowish-white
+
+    // Overpower the red completely at the peak
+    vec3 finalColor = mix(colorRed, colorBulb, clamp(peakIntensity * 1.8, 0.0, 1.0));
+
+    // 5. OPACITY BOOST
+    // Additive blending washes out whites if alpha is low.
+    // We force alpha to 1.0 at the peak so it visually "blinds" the screen.
+    float baseAlpha = density;
+    baseAlpha += peakIntensity * mask * 0.8;
+
+    // Fade in at start, fade out at end
+    float intro = smoothstep(0.0, 0.1, uProgress);
+    float outro = 1.0 - smoothstep(0.7, 1.0, uProgress);
+    float alpha = baseAlpha * intro * outro;
+
+    if (dist > 0.48) alpha = 0.0; // Safety boundary
+
+    // Multiply color by alpha for clean Additive Blending
+    gl_FragColor = vec4(finalColor * alpha, alpha);
   }
 `
 
