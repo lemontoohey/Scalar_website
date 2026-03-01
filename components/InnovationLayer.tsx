@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import ScannerTextReveal from '@/components/ScannerTextReveal'
 
 const ScrambleTitle = ({ text }: { text: string }) => {
   const [displayText, setDisplayText] = useState('')
@@ -90,31 +91,39 @@ export default function InnovationLayer({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="md:col-span-9 space-y-12">
-            <p>
-              We do not manufacture paint. We engineer{' '}
-              <span className="text-[#A80000] font-mono text-base">optical voids</span>. Scalar
-              Materials was founded on a singular principle: that depth is not a dimension of space,
-              but a function of{' '}
-              <span className="text-[#A80000] font-mono text-base">light absorption</span>.
-            </p>
+            <ScannerTextReveal className="block">
+              <p>
+                We do not manufacture paint. We engineer{' '}
+                <span className="text-[#A80000] font-mono text-base">optical voids</span>. Scalar
+                Materials was founded on a singular principle: that depth is not a dimension of space,
+                but a function of{' '}
+                <span className="text-[#A80000] font-mono text-base">light absorption</span>.
+              </p>
+            </ScannerTextReveal>
 
-            <p>
-              Our process begins where traditional chemistry ends. By utilizing{' '}
-              <span className="text-[#A80000] font-mono text-base">suspended crystal lattice</span>{' '}
-              structures, we create binders that do not reflect light—they consume it. The result is
-              not &quot;black&quot; or &quot;red&quot; in the traditional sense, but a material absence
-              that the human eye struggles to resolve.
-            </p>
+            <ScannerTextReveal className="block">
+              <p>
+                Our process begins where traditional chemistry ends. By utilizing{' '}
+                <span className="text-[#A80000] font-mono text-base">suspended crystal lattice</span>{' '}
+                structures, we create binders that do not reflect light—they consume it. The result is
+                not &quot;black&quot; or &quot;red&quot; in the traditional sense, but a material absence
+                that the human eye struggles to resolve.
+              </p>
+            </ScannerTextReveal>
 
-            <div className="border-l-2 border-[#A80000] pl-8 py-2 my-12 text-2xl md:text-3xl text-[#FCFBF8] font-thin">
-              &quot;To define the edge is to limit the object. We remove the edge.&quot;
-            </div>
+            <ScannerTextReveal className="block">
+              <div className="border-l-2 border-[#A80000] pl-8 py-2 my-12 text-2xl md:text-3xl text-[#FCFBF8] font-thin">
+                &quot;To define the edge is to limit the object. We remove the edge.&quot;
+              </div>
+            </ScannerTextReveal>
 
-            <p>
-              Each batch is cured in a hyper-baric chamber to ensure{' '}
-              <span className="text-[#A80000] font-mono text-base">zero-porosity</span>. This is not
-              for the hobbyist. This is for the sovereignty of the object.
-            </p>
+            <ScannerTextReveal className="block">
+              <p>
+                Each batch is cured in a hyper-baric chamber to ensure{' '}
+                <span className="text-[#A80000] font-mono text-base">zero-porosity</span>. This is not
+                for the hobbyist. This is for the sovereignty of the object.
+              </p>
+            </ScannerTextReveal>
 
             {/* Technical Footer */}
             <div className="mt-24 pt-12 border-t border-[#FCFBF8]/10 opacity-60">
