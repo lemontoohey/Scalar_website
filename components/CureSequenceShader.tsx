@@ -89,8 +89,9 @@ export default function CureSequenceShader({ onCureComplete }: { onCureComplete?
   const timeRef = useRef(0)
   const cureCompleteFired = useRef(false)
 
-  const planeWidth = viewport.width * 1.5
-  const planeHeight = viewport.height * 1.5
+  // Avoid 0-size plane when viewport not yet measured (e.g. first frame)
+  const planeWidth = Math.max(viewport.width * 1.5, 10)
+  const planeHeight = Math.max(viewport.height * 1.5, 10)
 
   const uniforms = useMemo(
     () => ({
@@ -101,8 +102,9 @@ export default function CureSequenceShader({ onCureComplete }: { onCureComplete?
   )
 
   useFrame((_, delta) => {
-    // Bulletproof clock accumulation
-    timeRef.current += delta
+    // Clamp delta to avoid huge jumps when tab was backgrounded
+    const clampedDelta = Math.min(delta, 0.1)
+    timeRef.current += clampedDelta
     uniforms.uTime.value = timeRef.current
 
     const elapsedMs = timeRef.current * 1000
