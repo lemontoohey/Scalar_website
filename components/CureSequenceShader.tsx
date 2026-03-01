@@ -86,7 +86,6 @@ function easeExponentialIn(t: number) {
 
 export default function CureSequenceShader({ onCureComplete }: { onCureComplete?: () => void }) {
   const { viewport } = useThree()
-  const timeRef = useRef(0)
   const cureCompleteFired = useRef(false)
 
   // Avoid 0-size plane when viewport not yet measured (e.g. first frame)
@@ -101,13 +100,12 @@ export default function CureSequenceShader({ onCureComplete }: { onCureComplete?
     []
   )
 
-  useFrame((_, delta) => {
-    // Clamp delta to avoid huge jumps when tab was backgrounded
-    const clampedDelta = Math.min(delta, 0.1)
-    timeRef.current += clampedDelta
-    uniforms.uTime.value = timeRef.current
+  useFrame((state) => {
+    // Use clock.elapsedTime - reliable even when delta is 0 on first frame or tab backgrounded
+    const elapsed = state.clock.elapsedTime
+    uniforms.uTime.value = elapsed
 
-    const elapsedMs = timeRef.current * 1000
+    const elapsedMs = elapsed * 1000
     const rawProgress = Math.min(elapsedMs / DURATION_MS, 1.0)
 
     const phaseSplit = 0.444
