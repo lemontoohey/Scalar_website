@@ -4,8 +4,6 @@ import { useRef, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const DURATION_MS = 3716 // Exactly 3.7 seconds to sync with framer motion UI
-
 const vertexShader = `
   varying vec2 vUv;
   void main() {
@@ -76,14 +74,13 @@ const fragmentShader = `
 `
 
 export default function CureSequenceShader({ onCureComplete, onFlashPeak }: { onCureComplete?: () => void, onFlashPeak?: () => void }) {
+  const meshRef = useRef<THREE.Mesh>(null)
   const { viewport } = useThree()
   
   // Independent logic locks (ignore React cycles)
-  const timeRef = useRef(0)
-  const isCuredRef = useRef(false)
-  const isFlashedRef = useRef(false)
-  
-  // React-three-fiber's viewport can be 0 initially, ensure minimums
+  const flashPeakFired = useRef(false)
+  const cureCompleteFired = useRef(false)
+
   const w = Math.max(viewport.width * 1.5, 10)
   const h = Math.max(viewport.height * 1.5, 10)
 
@@ -92,50 +89,40 @@ export default function CureSequenceShader({ onCureComplete, onFlashPeak }: { on
     uTime: { value: 0 },
   }),[])
 
-  useFrame((state, delta) => {
-    // Cap wild frame drops caused by tab switching or suspenses
-    const safeDelta = Math.min(delta, 0.1);
-    timeRef.current += safeDelta;
+  useFrame((state) => {
+    // 1. Clock always ticks regardless of react state
+    const t = state.clock.elapsedTime;
     
-    // Calculate progress based on accumulated safe delta time
-    // Note: This replaces the previous logic that might have used state.clock.elapsedTime
-    // which could desync if the tab was backgrounded.
-    const elapsed = timeRef.current * 1000;
-    const rawProgress = Math.min(elapsed / DURATION_MS, 1.0);
+    // 2. Safely grab material
+    if (meshRef.current && meshRef.current.material) {
+      const material = meshRef.current.material as THREE.ShaderMaterial;
+      if (material.uniforms) {
+        
+        // Pass infinite time to shader for endless red swirling mist
+        material.uniforms.uTime.value = t;
 
-    // Easing 
-    const phaseSplit = 0.444;
-    let eased = 0;
-    // Implementation of custom easing logic matching the shader requirements
-    if (rawProgress < phaseSplit) {
-      // Sine out
-      eased = phaseSplit * (1 - Math.cos((rawProgress / phaseSplit) * Math.PI / 2));
-    } else {
-      // Exponential in
-      const t = (rawProgress - phaseSplit) / (1 - phaseSplit);
-      eased = phaseSplit + (1 - phaseSplit) * (t <= 0 ? 0 : Math.pow(2, 10 * (t - 1)));
-    }
+        // Calculate progress manually: 3.7 second duration
+        const duration = 3.716;
+        let progress = Math.min(t / duration, 1.0);
+        material.uniforms.uProgress.value = progress;
 
-    // Set direct WebGL state
-    uniforms.uTime.value = timeRef.current;
-    uniforms.uProgress.value = eased;
+        // Flash peaks at progress 0.444 (approx 1.65 seconds)
+        if (progress >= 0.444 && !flashPeakFired.current) {
+          flashPeakFired.current = true;
+          if (onFlashPeak) onFlashPeak();
+        }
 
-    // Trigger precise drops
-    if (rawProgress >= 0.444 && !isFlashedRef.current) {
-      isFlashedRef.current = true;
-      if (onFlashPeak) onFlashPeak();
+        // Finish callback at 3.7 seconds
+        if (progress >= 1.0 && !cureCompleteFired.current) {
+          cureCompleteFired.current = true;
+          if (onCureComplete) onCureComplete();
+        }
+      }
     }
-    if (rawProgress >= 1.0 && !isCuredRef.current) {
-      isCuredRef.current = true;
-      if (onCureComplete) onCureComplete();
-    }
-    
-    // Update mesh material uniforms if needed (though object reference is usually stable)
-    // The uniforms object is stable via useMemo, so we update its properties directly.
   })
 
   return (
-    <mesh position={[0, 0, -1]}>
+    <mesh ref={meshRef} position={[0, 0, -1]}>
       <planeGeometry args={[w, h, 1, 1]} />
       <shaderMaterial
         vertexShader={vertexShader}

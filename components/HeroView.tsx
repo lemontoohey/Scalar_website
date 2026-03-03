@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { playThud } from '@/hooks/useSound'
-import R3FErrorBoundary from '@/components/R3FErrorBoundary'
 
+// RESTORED: Timing Math Constants
 const MIST_DURATION_S = 3.7
 const MIST_PEAK_S = MIST_DURATION_S / 2
 
@@ -16,9 +16,9 @@ const ORDINANCE_FADE_IN_DELAY_S =
   SCALAR_FADE_IN_DELAY_S + SCALAR_FADE_IN_DURATION_S + 0.7
 const ORDINANCE_FADE_IN_DURATION_S = 0.8
 
+// RESTORED: Missing dynamic R3F imports 
 const ClientCanvas = dynamic(() => import('./ClientCanvas'), { ssr: false })
 const CureSequenceShader = dynamic(() => import('./CureSequenceShader'), { ssr: false })
-const LensText = dynamic(() => import('./LensText'), { ssr: false })
 
 type HeroViewProps = {
   isCured: boolean
@@ -27,10 +27,11 @@ type HeroViewProps = {
 }
 
 export default function HeroView({
-  isCured,
+  isCured, // Keep prop for fallback logic just in case
   onSelectCategory,
   onTransitionStart,
 }: HeroViewProps) {
+  
   const scalarVariant = {
     hidden: { opacity: 0 },
     visible: {
@@ -61,9 +62,9 @@ export default function HeroView({
       opacity: 1,
       y: 0,
       transition: {
-        delay: 0, // Immediate drop exactly at 1650ms peak
+        delay: 0, // Drops the EXACT millisecond the shader flash peak hits
         duration: 0.8,
-        ease: [0.16, 1, 0.3, 1],
+        ease:[0.16, 1, 0.3, 1],
       },
     },
   }
@@ -77,7 +78,7 @@ export default function HeroView({
 
   return (
     <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
-      {/* Layer 1 (Back): WebGL Mist - full screen */}
+      {/* Layer 1 (Back): WebGL Mist - full screen radial overlay */}
       <div
         className="absolute inset-0 z-0 opacity-70"
         style={{
@@ -86,44 +87,25 @@ export default function HeroView({
         }}
         aria-hidden
       />
-      {/* Mist container: radial mask feathers edges, no visible square box */}
-      <div
-        className="absolute inset-0 z-[1] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,white_15%,transparent_70%)] [-webkit-mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,white_15%,transparent_70%)] [mask-size:100%_100%] [-webkit-mask-size:100%_100%]"
-        style={{ transform: 'translateZ(0)', willChange: 'transform' }}
-      >
+      
+      {/* WebGL container: Z-Index 1 to sit behind UI text. Pointer events NONE so it doesnt block cursor. */}
+      <div className="absolute inset-0 z-[1]" style={{ transform: 'translateZ(0)', pointerEvents: 'none' }}>
         <ClientCanvas
           fallback={
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(74,0,0,0.45) 0%, rgba(31,5,16,0.3) 40%, transparent 65%)',
-              }}
-            />
+            <div className="absolute inset-0 bg-[#000502]" />
           }
         >
-          <R3FErrorBoundary onError={(e) => console.error('CureSequenceShader error:', e)}>
-            <Suspense fallback={null}>
-              <CureSequenceShader
-                onFlashPeak={() => {
-                  setShowButtons(true)
-                  playThud()
-                }}
-              />
-            </Suspense>
-          </R3FErrorBoundary>
-
-          <R3FErrorBoundary onError={(e) => console.error('LensText error:', e)}>
-            <Suspense fallback={null}>
-              <LensText position={[0, 0.3, 0]} fontSize={2.5}>
-                Scalar
-              </LensText>
-            </Suspense>
-          </R3FErrorBoundary>
+           {/* Pure WebGL Layer - NO Heavy Text / Suspense boundaries rendering 600fps glass */}
+           <CureSequenceShader 
+             onFlashPeak={() => {
+                setShowButtons(true);
+                playThud();
+             }} 
+           />
         </ClientCanvas>
       </div>
 
-      {/* Layer 2 (Middle): Hero text - center (no outline on mobile) */}
+      {/* Layer 2 (Middle): Hero text - centered UI, must have pointer events AUTO */}
       <section className="hero-text-block relative min-h-screen flex flex-col items-center justify-center overflow-hidden pointer-events-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
         <div className="relative text-center pointer-events-auto z-[60]" style={{ outline: 'none', background: 'transparent' }}>
           <div className="space-y-4">
@@ -162,28 +144,28 @@ export default function HeroView({
           </div>
         </div>
 
-        {/* Layer 3 (Front): [organic] | [inorganic] - only tied to isCured (3.7s + thud) */}
+        {/* Layer 3 (Front): UI Action Gate */}
         <motion.div
-          className="flex items-center justify-center gap-12 md:gap-16 pointer-events-auto mt-16"
-          style={{ marginTop: '8vh', zIndex: 50 }}
+          className="flex items-center justify-center gap-12 md:gap-16 pointer-events-auto mt-16 z-[60]"
+          style={{ marginTop: '8vh', position: 'relative' }}
           variants={bifurcationVariant}
           initial="hidden"
           animate={showButtons ? 'visible' : 'hidden'}
         >
           <button
             type="button"
-            data-thermal-hover
+            data-thermal-hover="true"
             onClick={() => handleChoice('organic')}
-            className="font-light tracking-[0.4em] lowercase text-white/70 hover:text-white transition-colors"
+            className="font-light tracking-[0.4em] lowercase text-[#FCFBF8]/60 hover:text-white transition-colors p-4"
             style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
           >
             [organic]
           </button>
           <button
             type="button"
-            data-thermal-hover
+            data-thermal-hover="true"
             onClick={() => handleChoice('inorganic')}
-            className="font-light tracking-[0.4em] lowercase text-white/70 hover:text-white transition-colors"
+            className="font-light tracking-[0.4em] lowercase text-[#FCFBF8]/60 hover:text-white transition-colors p-4"
             style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
           >
             [inorganic]

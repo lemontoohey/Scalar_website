@@ -35,12 +35,11 @@ const ScrambleTitle = ({ text }: { text: string }) => {
 export default function InnovationLayer({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
-      initial={{ y: '100%' }}
-      animate={{ y: 0 }}
-      exit={{ y: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-50 h-screen bg-[#000502] text-[#FCFBF8] overflow-y-auto overscroll-none"
-      data-lenis-prevent
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="fixed inset-0 z-[200] min-h-screen w-full bg-[#000502] text-[#FCFBF8] overflow-y-auto overscroll-none"
     >
       <div
         className="fixed inset-0 z-0 pointer-events-none"
