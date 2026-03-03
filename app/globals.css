@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global mobile tap fix */
+* {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none;
+}
+*:focus {
+  outline: none !important;
+}
+
 @layer base {
   :root {
     /* Prevent overscroll bounce on mobile to keep the shader immersion */
@@ -113,5 +122,6 @@
     -webkit-touch-callout: none;
     user-select: none;
     -webkit-user-select: none;
+    outline: none !important;
   }
 }

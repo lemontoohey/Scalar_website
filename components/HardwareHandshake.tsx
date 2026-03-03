@@ -8,6 +8,13 @@ export default function HardwareHandshake() {
 
   useEffect(() => {
     const detectHardware = async () => {
+      // Safety timeout to ensure we don't hang indefinitely
+      const timeoutId = setTimeout(() => {
+        if (!hardwareInfo) {
+          setHardwareInfo('GPU_TIMEOUT // 60Hz')
+        }
+      }, 3000)
+
       try {
         // Detect GPU via WebGL
         const canvas = document.createElement('canvas')
@@ -18,9 +25,15 @@ export default function HardwareHandshake() {
           return
         }
 
-        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info')
-        const gpuVendor = debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'Unknown'
-        const gpuRenderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'Unknown'
+        const ext = gl.getExtension('WEBGL_debug_renderer_info')
+        const gpuVendor = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : 'Unknown'
+        const gpuRenderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'Unknown'
+        
+        // Clean up context immediately
+        const loseContextExt = gl.getExtension('WEBGL_lose_context')
+        if (loseContextExt) {
+          loseContextExt.loseContext()
+        }
         
         // Detect refresh rate
         let refreshRate = 60 // Default
@@ -31,6 +44,7 @@ export default function HardwareHandshake() {
           frameCount++
           const now = performance.now()
           if (now - lastTime >= 1000) {
+            clearTimeout(timeoutId)
             refreshRate = frameCount
             frameCount = 0
             lastTime = now
@@ -62,6 +76,7 @@ export default function HardwareHandshake() {
         
         let rafId = requestAnimationFrame(measureRefreshRate)
       } catch (error) {
+        clearTimeout(timeoutId)
         console.error('Hardware detection failed:', error)
         setHardwareInfo('DETECTION_FAILED')
       }
@@ -72,7 +87,7 @@ export default function HardwareHandshake() {
 
   return (
     <motion.div
-      className="fixed bottom-8 left-8 z-[100]"
+      className="fixed bottom-8 left-8 z-[100] pointer-events-none select-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 0.2 }}
       transition={{ duration: 1, delay: 1 }}

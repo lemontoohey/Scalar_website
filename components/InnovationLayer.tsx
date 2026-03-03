@@ -42,11 +42,10 @@ export default function InnovationLayer({ onClose }: { onClose: () => void }) {
       className="fixed inset-0 z-50 h-screen bg-[#000502] text-[#FCFBF8] overflow-y-auto overscroll-none"
       data-lenis-prevent
     >
-      {/* Minimal clinical void + centered radial spotlight */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 50% -20%, rgba(168,0,0,0.1) 0%, #000502 70%)',
+          background: 'radial-gradient(circle at 50% 0%, rgba(168,0,0,0.12) 0%, #000502 60%)',
         }}
       />
 

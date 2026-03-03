@@ -29,12 +29,16 @@ function ClientCanvas({
 
   return (
     <ErrorBoundary fallback={fallback ?? <div className="fixed inset-0 bg-[#000502]" />}>
-      <div className="fixed inset-0 pointer-events-none z-0 min-w-[1px] min-h-[1px]" data-red-mist>
+      <div 
+        className="fixed inset-0 pointer-events-none z-0 min-w-[1px] min-h-[1px] select-none outline-none touch-none" 
+        data-red-mist
+        style={{ WebkitTapHighlightColor: 'transparent' }}
+      >
         <Canvas
             flat
             frameloop="always"
-            dpr={[1, 2]}
-            gl={{ antialias: true, alpha: true, stencil: false, depth: true }}
+            dpr={[1, 1.5]}
+            gl={{ powerPreference: "high-performance", antialias: false, alpha: true, stencil: false, depth: true }}
             camera={{ position: [0, 0, cameraZ], fov: 45 }}
           >
             {children}

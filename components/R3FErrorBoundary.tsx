@@ -1,0 +1,39 @@
+'use client'
+
+import { Component, ReactNode } from 'react'
+
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
+  onError?: (error: Error) => void
+}
+
+interface State {
+  hasError: boolean
+}
+
+export default class R3FErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(): State {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('R3FErrorBoundary caught an error:', error, errorInfo)
+    if (this.props.onError) {
+      this.props.onError(error)
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || null
+    }
+
+    return this.props.children
+  }
+}

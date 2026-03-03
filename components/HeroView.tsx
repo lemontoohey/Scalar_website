@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { playThud } from '@/hooks/useSound'
+import R3FErrorBoundary from '@/components/R3FErrorBoundary'
 
 const MIST_DURATION_S = 3.7
 const MIST_PEAK_S = MIST_DURATION_S / 2
@@ -101,19 +102,24 @@ export default function HeroView({
             />
           }
         >
-          <Suspense fallback={null}>
-            <CureSequenceShader
-              onFlashPeak={() => {
-                setShowButtons(true)
-                playThud()
-              }}
-            />
-          </Suspense>
-          <Suspense fallback={null}>
-            <LensText position={[0, 0.3, 0]} fontSize={2.5}>
-              Scalar
-            </LensText>
-          </Suspense>
+          <R3FErrorBoundary onError={(e) => console.error('CureSequenceShader error:', e)}>
+            <Suspense fallback={null}>
+              <CureSequenceShader
+                onFlashPeak={() => {
+                  setShowButtons(true)
+                  playThud()
+                }}
+              />
+            </Suspense>
+          </R3FErrorBoundary>
+
+          <R3FErrorBoundary onError={(e) => console.error('LensText error:', e)}>
+            <Suspense fallback={null}>
+              <LensText position={[0, 0.3, 0]} fontSize={2.5}>
+                Scalar
+              </LensText>
+            </Suspense>
+          </R3FErrorBoundary>
         </ClientCanvas>
       </div>
 

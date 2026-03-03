@@ -30,16 +30,15 @@ export default function LensText({
       {children}
       <MeshTransmissionMaterial
         backside
-        samples={10}
-        resolution={512}
+        samples={3}
+        resolution={256}
         transmission={0.95}
         thickness={0.5}
         roughness={0.1}
         chromaticAberration={0.05}
-        anisotropy={0.1}
         distortion={0.1}
         distortionScale={0.5}
-        temporalDistortion={0.0}
+        temporalDistortion={0}
       />
     </Text>
   )
