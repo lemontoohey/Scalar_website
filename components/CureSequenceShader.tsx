@@ -84,9 +84,16 @@ function easeExponentialIn(t: number) {
   return t <= 0 ? 0 : Math.pow(2, 10 * (t - 1))
 }
 
-export default function CureSequenceShader({ onCureComplete }: { onCureComplete?: () => void }) {
+export default function CureSequenceShader({
+  onCureComplete,
+  onFlashPeak,
+}: {
+  onCureComplete?: () => void
+  onFlashPeak?: () => void
+}) {
   const { viewport } = useThree()
   const cureCompleteFired = useRef(false)
+  const flashPeakFired = useRef(false)
   const startTimeRef = useRef<number | null>(null)
 
   // Avoid 0-size plane when viewport not yet measured (e.g. first frame)
@@ -109,6 +116,11 @@ export default function CureSequenceShader({ onCureComplete }: { onCureComplete?
 
     const elapsedMs = elapsed * 1000
     const rawProgress = Math.min(elapsedMs / DURATION_MS, 1.0)
+
+    if (rawProgress >= 0.444 && !flashPeakFired.current) {
+      flashPeakFired.current = true
+      if (onFlashPeak) onFlashPeak()
+    }
 
     const phaseSplit = 0.444
     let eased = 0

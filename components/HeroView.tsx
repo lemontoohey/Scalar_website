@@ -1,7 +1,9 @@
 'use client'
 
+import { useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
+import { playThud } from '@/hooks/useSound'
 
 const MIST_DURATION_S = 3.7
 const MIST_PEAK_S = MIST_DURATION_S / 2
@@ -65,6 +67,8 @@ export default function HeroView({
     },
   }
 
+  const [showButtons, setShowButtons] = useState(false)
+
   const handleChoice = (category: 'organic' | 'inorganic') => {
     onSelectCategory(category)
     onTransitionStart()
@@ -96,19 +100,28 @@ export default function HeroView({
             />
           }
         >
-          <CureSequenceShader />
-          <LensText position={[0, 0.3, 0]} fontSize={2.5}>
-            Scalar
-          </LensText>
+          <Suspense fallback={null}>
+            <CureSequenceShader
+              onFlashPeak={() => {
+                setShowButtons(true)
+                playThud()
+              }}
+            />
+          </Suspense>
+          <Suspense fallback={null}>
+            <LensText position={[0, 0.3, 0]} fontSize={2.5}>
+              Scalar
+            </LensText>
+          </Suspense>
         </ClientCanvas>
       </div>
 
       {/* Layer 2 (Middle): Hero text - center (no outline on mobile) */}
       <section className="hero-text-block relative min-h-screen flex flex-col items-center justify-center overflow-hidden pointer-events-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
-        <div className="relative text-center pointer-events-auto" style={{ zIndex: 50, outline: 'none', background: 'transparent' }}>
+        <div className="relative text-center pointer-events-auto z-[60]" style={{ outline: 'none', background: 'transparent' }}>
           <div className="space-y-4">
             <motion.h1
-              data-thermal-hover
+              data-thermal-hover="true"
               className="hero-title text-7xl md:text-9xl font-light tracking-[0.4em] text-[#FCFBF8] outline-none select-none"
               style={{
                 fontFamily: 'var(--font-archivo)',
@@ -126,7 +139,7 @@ export default function HeroView({
               Scalar
             </motion.h1>
             <motion.p
-              data-thermal-hover
+              data-thermal-hover="true"
               className="text-lg md:text-xl font-light tracking-[0.6em] lowercase text-[#FCFBF8]/80 mt-4"
               style={{
                 fontFamily: 'var(--font-archivo)',
@@ -148,7 +161,7 @@ export default function HeroView({
           style={{ marginTop: '8vh', zIndex: 50 }}
           variants={bifurcationVariant}
           initial="hidden"
-          animate={isCured ? 'visible' : 'hidden'}
+          animate={showButtons ? 'visible' : 'hidden'}
         >
           <button
             type="button"

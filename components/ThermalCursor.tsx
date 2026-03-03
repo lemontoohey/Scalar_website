@@ -65,7 +65,6 @@ export default function ThermalCursor() {
       x: mousePosition.x - 4,
       y: mousePosition.y - 4,
       background: 'radial-gradient(circle, rgba(252, 251, 248, 0.8) 0%, rgba(252, 251, 248, 0) 70%)',
-      filter: 'blur(1px)',
       borderRadius: '50%',
       mixBlendMode: 'difference' as const,
       transition: {
@@ -81,7 +80,6 @@ export default function ThermalCursor() {
       x: mousePosition.x - 60,
       y: mousePosition.y - 60,
       background: 'radial-gradient(circle, rgba(168, 0, 0, 0.6) 0%, rgba(168, 0, 0, 0) 70%)',
-      filter: 'blur(12px)',
       borderRadius: [
         '50% 50%',
         '30% 70% 40% 60%',

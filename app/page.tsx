@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Specimen } from '@/constants/specimens'
-import { playThud, playLensClick } from '@/hooks/useSound'
+import { playLensClick } from '@/hooks/useSound'
 import GlobalNav from '@/components/GlobalNav'
 import MetadataOverlays from '@/components/MetadataOverlays'
 import HardwareHandshake from '@/components/HardwareHandshake'
@@ -21,8 +21,6 @@ const HeroView = dynamic(() => import('@/components/HeroView'), { ssr: false })
 export type PageState = 'hero' | 'gallery'
 export type ViewMode = 'cinema' | 'innovation'
 
-const CURE_THUD_MS = 1650 // Synchronized with the 0.444 shader peak
-
 export default function Home() {
   const [state, setState] = useState<PageState>('hero')
   const [viewMode, setViewMode] = useState<ViewMode>('cinema')
@@ -34,14 +32,7 @@ export default function Home() {
   const [procurementSpecimenName, setProcurementSpecimenName] = useState('')
   const [viewingSpecimen, setViewingSpecimen] = useState<Specimen | null>(null)
 
-  useEffect(() => {
-    if (state !== 'hero') return
-    const t = setTimeout(() => {
-      setIsCured(true)
-      playThud()
-    }, CURE_THUD_MS)
-    return () => clearTimeout(t)
-  }, [state, mistKey])
+  // Thud + buttons now driven by CureSequenceShader onFlashPeak (rawProgress >= 0.444)
 
   const resetSystem = useCallback(() => {
     setIsCured(false)
