@@ -19,15 +19,27 @@ export default function ScannerTextReveal({
   const progress = useMotionValue(0)
 
   useEffect(() => {
-    if (!isInView || hasAnimated) return
-    setHasAnimated(true)
+    // Fallback: force animation if view detection fails or takes too long
+    const timer = setTimeout(() => {
+      if (!hasAnimated) setHasAnimated(true)
+    }, 100) // Immediate trigger for now to solve visibility issues
+    
+    if (isInView && !hasAnimated) {
+      setHasAnimated(true)
+    }
+    
+    return () => clearTimeout(timer)
+  }, [isInView, hasAnimated])
+
+  useEffect(() => {
+    if (!hasAnimated) return
     const controls = animate(0, 1, {
       duration: DURATION_S,
       ease: [0.22, 1, 0.36, 1],
       onUpdate: (v) => progress.set(v),
     })
     return () => controls.stop()
-  }, [isInView, hasAnimated, progress])
+  }, [hasAnimated, progress])
 
   const maskImage = useTransform(
     progress,

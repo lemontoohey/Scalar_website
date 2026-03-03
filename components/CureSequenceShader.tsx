@@ -80,6 +80,7 @@ export default function CureSequenceShader({ onCureComplete, onFlashPeak }: { on
   // Independent logic locks (ignore React cycles)
   const flashPeakFired = useRef(false)
   const cureCompleteFired = useRef(false)
+  const startTimeRef = useRef<number | null>(null)
 
   const w = Math.max(viewport.width * 1.5, 10)
   const h = Math.max(viewport.height * 1.5, 10)
@@ -90,8 +91,15 @@ export default function CureSequenceShader({ onCureComplete, onFlashPeak }: { on
   }),[])
 
   useFrame((state) => {
+    // Initialize start time on first frame to handle component mounting at any time
+    if (startTimeRef.current === null) {
+      startTimeRef.current = state.clock.elapsedTime
+    }
+
     // 1. Clock always ticks regardless of react state
     const t = state.clock.elapsedTime;
+    // Calculate local elapsed time for this specific instance
+    const localElapsed = t - startTimeRef.current;
     
     // 2. Safely grab material
     if (meshRef.current && meshRef.current.material) {
@@ -99,11 +107,11 @@ export default function CureSequenceShader({ onCureComplete, onFlashPeak }: { on
       if (material.uniforms) {
         
         // Pass infinite time to shader for endless red swirling mist
-        material.uniforms.uTime.value = t;
+        material.uniforms.uTime.value = localElapsed;
 
         // Calculate progress manually: 3.7 second duration
         const duration = 3.716;
-        let progress = Math.min(t / duration, 1.0);
+        let progress = Math.min(localElapsed / duration, 1.0);
         material.uniforms.uProgress.value = progress;
 
         // Flash peaks at progress 0.444 (approx 1.65 seconds)
