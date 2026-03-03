@@ -98,6 +98,7 @@ export default function CureSequenceShader({
   onCureComplete?: () => void
   onFlashPeak?: () => void
 }) {
+  const meshRef = useRef<THREE.Mesh>(null)
   const { viewport } = useThree()
   const cureCompleteFired = useRef(false)
   const flashPeakFired = useRef(false)
@@ -112,7 +113,13 @@ export default function CureSequenceShader({
   useFrame((state) => {
     if (startTimeRef.current === null) startTimeRef.current = state.clock.elapsedTime
     const elapsed = state.clock.elapsedTime - startTimeRef.current
-    uniforms.uTime.value = elapsed
+    
+    if (meshRef.current) {
+      const material = meshRef.current.material as THREE.ShaderMaterial
+      if (material && material.uniforms) {
+        material.uniforms.uTime.value = elapsed
+      }
+    }
 
     const rawProgress = Math.min(elapsed / (DURATION_MS / 1000), 1.0)
     if (rawProgress >= 0.444 && !flashPeakFired.current) {
@@ -126,7 +133,7 @@ export default function CureSequenceShader({
   })
 
   return (
-    <mesh position={[0, 0, -1]}>
+    <mesh ref={meshRef} position={[0, 0, -1]}>
       <planeGeometry args={[planeWidth, planeHeight, 64, 64]} />
       <shaderMaterial
         vertexShader={vertexShader}

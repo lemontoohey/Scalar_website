@@ -88,6 +88,7 @@ export default function HeroView({
       {/* Mist container: radial mask feathers edges, no visible square box */}
       <div
         className="absolute inset-0 z-[1] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,white_15%,transparent_70%)] [-webkit-mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,white_15%,transparent_70%)] [mask-size:100%_100%] [-webkit-mask-size:100%_100%]"
+        style={{ transform: 'translateZ(0)', willChange: 'transform' }}
       >
         <ClientCanvas
           fallback={
