@@ -42,21 +42,11 @@ export default function InnovationLayer({ onClose }: { onClose: () => void }) {
       className="fixed inset-0 z-50 h-screen bg-[#000502] text-[#FCFBF8] overflow-y-auto overscroll-none"
       data-lenis-prevent
     >
-      {/* Suspended Lattice Background */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none opacity-20"
-        style={{
-          backgroundImage: `linear-gradient(rgba(168, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 0, 0, 0.1) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
-          backgroundPosition: 'center center',
-          transform: 'perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px)',
-          transformOrigin: 'top center',
-        }}
-      />
+      {/* Minimal clinical void + centered radial spotlight */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 50% 50%, transparent 0%, #000502 80%)',
+          background: 'radial-gradient(circle at 50% -20%, rgba(168,0,0,0.1) 0%, #000502 70%)',
         }}
       />
 

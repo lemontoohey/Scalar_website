@@ -57,69 +57,86 @@ export default function InnovationsPage() {
           Scalar Materials // Innovation Protocol
         </p>
 
-        {/* Section 1: The Molecular Suspension */}
+        {/* Section 1: Soup */}
         <PulseSection className="mb-24 md:mb-32">
           <h2
             className="text-2xl md:text-4xl font-light tracking-tight mb-6"
-            style={{ color: '#FF5A5F' }}
+            style={{ color: '#A80000' }}
           >
-            SUB-5 MICRON ARCHITECTURE
+            ENGINEERING THE VOID
           </h2>
           <p className="text-lg md:text-xl font-light leading-relaxed text-[#FCFBF8]/90 max-w-2xl">
-            We replaced traditional binders with a self-crosslinking molecular suspension. By
-            utilizing nano-tech pigments, we&apos;ve created massive surface areas within the
-            liquid, resulting in a coating with unprecedented chroma and refractive depth.
+            True depth is a math problem. By milling our materials down to sub-5 microns and locking them inside a specialized polymer system, we strip away the dull fillers that weaken traditional acrylics. What&apos;s left is pure, unbroken saturation and optical depth from the very first drop.
           </p>
         </PulseSection>
 
-        {/* Section 2: The UV-Flash */}
+        {/* Section 2: UV Flash */}
         <PulseSection className="mb-24 md:mb-32">
           <h2
             className="text-2xl md:text-4xl font-light tracking-tight mb-6"
-            style={{ color: '#FF5A5F' }}
+            style={{ color: '#A80000' }}
           >
-            50 LAYERS. ONE AFTERNOON.
+            INFINITE FLUID. INSTANT GLASS.
           </h2>
           <p className="text-lg md:text-xl font-light leading-relaxed text-[#FCFBF8]/90 max-w-2xl">
-            Traditional curing is a bottleneck. Scalar utilizes a UV-Flash bio-polymer system. This
-            offers &quot;Infinite Open Time&quot;—allowing the technician to work the material
-            indefinitely—followed by &quot;Instant Solidification&quot; via UV-light.
+            Traditional evaporation curing is an unacceptable bottleneck. Scalar materials operate on a UV-Flash biopolymer system. This separates the act of shaping from the act of curing. It provides &quot;Infinite Open Time&quot;—remaining perfectly fluid while you work—followed by instant, indestructible crosslinking the moment it meets a 365nm UV light.
           </p>
         </PulseSection>
 
-        {/* Section 3: Optical Hierarchy (3 Pillars) */}
+        {/* Section 3: Optical Hierarchy (3 Pillars) - Parallax layers */}
         <PulseSection>
           <h2
             className="text-2xl md:text-4xl font-light tracking-tight mb-12"
-            style={{ color: '#FF5A5F' }}
+            style={{ color: '#A80000' }}
           >
             OPTICAL HIERARCHY
           </h2>
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-            <div className="border-l-2 pl-6" style={{ borderColor: '#FF5A5F' }}>
-              <h3 className="text-sm font-mono tracking-widest uppercase text-[#FF5A5F] mb-3">
+          <div className="grid md:grid-cols-3 gap-8 md:gap-2" style={{ perspective: '1000px' }}>
+            <motion.div
+              className="border-l-2 pl-6 md:-mr-4"
+              style={{ borderColor: '#A80000', transformStyle: 'preserve-3d' }}
+              initial={{ opacity: 0, y: 28, z: -30 }}
+              whileInView={{ opacity: 1, y: 0, z: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0 }}
+            >
+              <h3 className="text-sm font-mono tracking-widest uppercase text-[#A80000] mb-3">
                 CLARITY
               </h3>
               <p className="text-[#FCFBF8]/80 font-light leading-relaxed">
-                Elimination of &quot;Milky&quot; haze in deep builds.
+                Absolute transparency. The total elimination of &quot;structural mud&quot; and milky haze in multi-layer builds.
               </p>
-            </div>
-            <div className="border-l-2 pl-6" style={{ borderColor: '#FF5A5F' }}>
-              <h3 className="text-sm font-mono tracking-widest uppercase text-[#FF5A5F] mb-3">
+            </motion.div>
+            <motion.div
+              className="border-l-2 pl-6 md:-mr-4"
+              style={{ borderColor: '#A80000', transformStyle: 'preserve-3d' }}
+              initial={{ opacity: 0, y: 28, z: -15 }}
+              whileInView={{ opacity: 1, y: 0, z: 15 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 }}
+            >
+              <h3 className="text-sm font-mono tracking-widest uppercase text-[#A80000] mb-3">
                 CHROMA
               </h3>
               <p className="text-[#FCFBF8]/80 font-light leading-relaxed">
-                High-saturation nano-pigments that don&apos;t settle.
+                Uncompromised saturation. Sub-micron pigments engineered for permanent, zero-settling suspension.
               </p>
-            </div>
-            <div className="border-l-2 pl-6" style={{ borderColor: '#FF5A5F' }}>
-              <h3 className="text-sm font-mono tracking-widest uppercase text-[#FF5A5F] mb-3">
+            </motion.div>
+            <motion.div
+              className="border-l-2 pl-6"
+              style={{ borderColor: '#A80000', transformStyle: 'preserve-3d' }}
+              initial={{ opacity: 0, y: 28, z: 0 }}
+              whileInView={{ opacity: 1, y: 0, z: 30 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
+            >
+              <h3 className="text-sm font-mono tracking-widest uppercase text-[#A80000] mb-3">
                 DEPTH
               </h3>
               <p className="text-[#FCFBF8]/80 font-light leading-relaxed">
-                Layered stratification that mimics the physics of glass.
+                Infinite refraction. A microscopic architecture designed not just to mimic the look of glass, but its physical behavior.
               </p>
-            </div>
+            </motion.div>
           </div>
         </PulseSection>
       </div>
