@@ -15,7 +15,6 @@ const vertexShader = `
 `
 
 const fragmentShader = `
-  uniform float uProgress;
   uniform float uTime;
   varying vec2 vUv;
 
@@ -42,16 +41,31 @@ const fragmentShader = `
     return f;
   }
 
+  float easeSineOut(float t) { return 1.0 - cos((t * 3.14159) / 2.0); }
+  float easeExpIn(float t) { return t <= 0.0 ? 0.0 : pow(2.0, 10.0 * (t - 1.0)); }
+
   void main() {
     vec2 center = vUv - 0.5;
     float dist = length(center);
 
+    // Progress from uTime only (decoupled from React useFrame)
+    float rawProgress = clamp(uTime / 3.716, 0.0, 1.0);
+    float phaseSplit = 0.444;
+    float eased;
+    if (rawProgress < phaseSplit) {
+      float t = rawProgress / phaseSplit;
+      eased = phaseSplit * easeSineOut(t);
+    } else {
+      float t = (rawProgress - phaseSplit) / (1.0 - phaseSplit);
+      eased = phaseSplit + (1.0 - phaseSplit) * easeExpIn(t);
+    }
+
     // 1. THE HEAT CURVE (Flash peaks at 0.444)
-    float heat = smoothstep(0.1, 0.444, uProgress) * (1.0 - smoothstep(0.444, 0.6, uProgress));
+    float heat = smoothstep(0.1, 0.444, eased) * (1.0 - smoothstep(0.444, 0.6, eased));
 
     // 2. EXPANDING RADIUS
-    float baseRadius = mix(0.15, 0.35, uProgress); // Base mist grows over time and stays big
-    float currentRadius = baseRadius + (heat * 0.2); // Expands massively during flash
+    float baseRadius = mix(0.15, 0.35, eased);
+    float currentRadius = baseRadius + (heat * 0.2);
 
     // 3. MIST & MASKS
     float mist = fbm(vUv * 3.5 - uTime * 0.2);
@@ -77,13 +91,6 @@ const fragmentShader = `
   }
 `
 
-function easeSineOut(t: number) {
-  return 1 - Math.cos((t * Math.PI) / 2)
-}
-function easeExponentialIn(t: number) {
-  return t <= 0 ? 0 : Math.pow(2, 10 * (t - 1))
-}
-
 export default function CureSequenceShader({
   onCureComplete,
   onFlashPeak,
@@ -100,40 +107,18 @@ export default function CureSequenceShader({
   const planeWidth = Math.max(viewport.width * 1.5, 10)
   const planeHeight = Math.max(viewport.height * 1.5, 10)
 
-  const uniforms = useMemo(
-    () => ({
-      uProgress: { value: 0 },
-      uTime: { value: 0 },
-    }),
-    []
-  )
+  const uniforms = useMemo(() => ({ uTime: { value: 0 } }), [])
 
   useFrame((state) => {
-    // Start from 0 when shader mounts (matches working 89d64af)
     if (startTimeRef.current === null) startTimeRef.current = state.clock.elapsedTime
     const elapsed = state.clock.elapsedTime - startTimeRef.current
-    uniforms.uTime.value = state.clock.elapsedTime
+    uniforms.uTime.value = elapsed
 
-    const elapsedMs = elapsed * 1000
-    const rawProgress = Math.min(elapsedMs / DURATION_MS, 1.0)
-
+    const rawProgress = Math.min(elapsed / (DURATION_MS / 1000), 1.0)
     if (rawProgress >= 0.444 && !flashPeakFired.current) {
       flashPeakFired.current = true
       if (onFlashPeak) onFlashPeak()
     }
-
-    const phaseSplit = 0.444
-    let eased = 0
-    if (rawProgress < phaseSplit) {
-      eased = phaseSplit * easeSineOut(rawProgress / phaseSplit)
-    } else {
-      eased =
-        phaseSplit +
-        (1 - phaseSplit) * easeExponentialIn((rawProgress - phaseSplit) / (1 - phaseSplit))
-    }
-
-    uniforms.uProgress.value = eased
-
     if (rawProgress >= 1.0 && !cureCompleteFired.current) {
       cureCompleteFired.current = true
       if (onCureComplete) onCureComplete()

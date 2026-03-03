@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense, useLayoutEffect } from 'react'
+import { useState, useLayoutEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import ErrorBoundary from './ErrorBoundary'
 
@@ -30,8 +30,7 @@ function ClientCanvas({
   return (
     <ErrorBoundary fallback={fallback ?? <div className="fixed inset-0 bg-[#000502]" />}>
       <div className="fixed inset-0 pointer-events-none z-0 min-w-[1px] min-h-[1px]" data-red-mist>
-        <Suspense fallback={fallback ?? null}>
-          <Canvas
+        <Canvas
             flat
             frameloop="always"
             dpr={[1, 2]}
@@ -40,7 +39,6 @@ function ClientCanvas({
           >
             {children}
           </Canvas>
-        </Suspense>
       </div>
     </ErrorBoundary>
   )
