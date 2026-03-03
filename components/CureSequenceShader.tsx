@@ -13,7 +13,6 @@ const vertexShader = `
 `
 
 const fragmentShader = `
-  uniform float uProgress;
   uniform float uTime;
   varying vec2 vUv;
 
@@ -36,101 +35,61 @@ const fragmentShader = `
     float f = 0.0;
     f += 0.500 * snoise(p); p *= 2.02;
     f += 0.250 * snoise(p);
-    return f; // Reduced math strain
+    return f; 
   }
 
   void main() {
     vec2 center = vUv - 0.5;
     float dist = length(center);
 
-    // Timing
-    float heat = smoothstep(0.1, 0.444, uProgress) * (1.0 - smoothstep(0.444, 0.6, uProgress));
+    // INTERNAL TIMELINE (Clock in Seconds)
+    // Red mist swells (0 -> 1.0s), flash heats up (1.0 -> 1.6s), cools down (1.6 -> 2.5s)
+    float heat = smoothstep(1.0, 1.6, uTime) * (1.0 - smoothstep(1.6, 2.5, uTime));
 
-    // Expansion
-    float currentRadius = 0.25 + (heat * 0.15) + (uProgress * 0.1); 
+    // Dynamic Expanding Radius (Grows infinitely slow, with massive bump at flash)
+    float baseRadius = clamp(uTime * 0.08, 0.15, 0.35); 
+    float radius = baseRadius + (heat * 0.25);
 
-    // Form
-    float mist = fbm(vUv * 4.0 - uTime * 0.15);
-    float mask = 1.0 - smoothstep(currentRadius * 0.3, currentRadius, dist);
-    float coreMask = 1.0 - smoothstep(0.0, currentRadius * 0.5, dist);
+    // Form the cloud
+    float mist = fbm(vUv * 3.5 - uTime * 0.2);
+    float mask = 1.0 - smoothstep(radius * 0.2, radius, dist);
 
-    // Color Setup (Strict opaque output over css)
-    vec3 baseColor = vec3(0.8, 0.0, 0.0); // Clinical red
-    vec3 burstColor = vec3(1.0, 0.95, 0.8); // Bulb white
+    // Colors
+    vec3 baseRed = vec3(0.8, 0.02, 0.05); // Standard deep scalar red
+    vec3 lightBulb = vec3(1.0, 0.95, 0.7); // High intensity hot-white
+
+    vec3 mixedColor = mix(baseRed, lightBulb, heat * 1.5) * max(mist, 0.15) * 1.5;
+
+    float alpha = mask * (mist + (heat * 1.2));
     
-    vec3 mixedColor = mix(baseColor, burstColor, heat * coreMask * 1.5);
-    
-    // Normal blending needs firm alpha 
-    float visibility = mask * (mist + 0.1);
-    float flashVisibility = heat * coreMask * 1.2;
-    float totalAlpha = visibility + flashVisibility;
+    // Fade in from black on absolute zero start
+    alpha *= smoothstep(0.0, 0.8, uTime);
 
-    // Hard clip out outer bounds to prevent geometric box
-    if(dist > 0.49 || totalAlpha < 0.01) discard;
+    // Hard Stop invisible geometry borders
+    if(dist > 0.49 || alpha < 0.01) discard;
 
-    // Render Output
-    gl_FragColor = vec4(mixedColor, clamp(totalAlpha, 0.0, 1.0));
+    gl_FragColor = vec4(mixedColor, alpha);
   }
 `
 
-export default function CureSequenceShader({ onCureComplete, onFlashPeak }: { onCureComplete?: () => void, onFlashPeak?: () => void }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const { viewport } = useThree()
+export default function CureSequenceShader() {
+  const { viewport } = useThree();
+  const timeRef = useRef(0);
   
-  // Independent logic locks (ignore React cycles)
-  const flashPeakFired = useRef(false)
-  const cureCompleteFired = useRef(false)
-  const startTimeRef = useRef<number | null>(null)
+  const w = Math.max(viewport.width * 1.5, 10);
+  const h = Math.max(viewport.height * 1.5, 10);
 
-  const w = Math.max(viewport.width * 1.5, 10)
-  const h = Math.max(viewport.height * 1.5, 10)
+  const uniforms = useMemo(() => ({ uTime: { value: 0 } }),[]);
 
-  const uniforms = useMemo(() => ({
-    uProgress: { value: 0 },
-    uTime: { value: 0 },
-  }),[])
-
-  useFrame((state) => {
-    // Initialize start time on first frame to handle component mounting at any time
-    if (startTimeRef.current === null) {
-      startTimeRef.current = state.clock.elapsedTime
-    }
-
-    // 1. Clock always ticks regardless of react state
-    const t = state.clock.elapsedTime;
-    // Calculate local elapsed time for this specific instance
-    const localElapsed = t - startTimeRef.current;
-    
-    // 2. Safely grab material
-    if (meshRef.current && meshRef.current.material) {
-      const material = meshRef.current.material as THREE.ShaderMaterial;
-      if (material.uniforms) {
-        
-        // Pass infinite time to shader for endless red swirling mist
-        material.uniforms.uTime.value = localElapsed;
-
-        // Calculate progress manually: 3.7 second duration
-        const duration = 3.716;
-        let progress = Math.min(localElapsed / duration, 1.0);
-        material.uniforms.uProgress.value = progress;
-
-        // Flash peaks at progress 0.444 (approx 1.65 seconds)
-        if (progress >= 0.444 && !flashPeakFired.current) {
-          flashPeakFired.current = true;
-          if (onFlashPeak) onFlashPeak();
-        }
-
-        // Finish callback at 3.7 seconds
-        if (progress >= 1.0 && !cureCompleteFired.current) {
-          cureCompleteFired.current = true;
-          if (onCureComplete) onCureComplete();
-        }
-      }
-    }
-  })
+  useFrame((_, delta) => {
+    // Only pass direct internal stopwatch, skipping React reconciliations
+    const safeDelta = Math.min(delta, 0.1); 
+    timeRef.current += safeDelta;
+    uniforms.uTime.value = timeRef.current;
+  });
 
   return (
-    <mesh ref={meshRef} position={[0, 0, -1]}>
+    <mesh position={[0, 0, -1]}>
       <planeGeometry args={[w, h, 1, 1]} />
       <shaderMaterial
         vertexShader={vertexShader}
@@ -141,5 +100,5 @@ export default function CureSequenceShader({ onCureComplete, onFlashPeak }: { on
         blending={THREE.NormalBlending}
       />
     </mesh>
-  )
+  );
 }

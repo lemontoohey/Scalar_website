@@ -1,79 +1,62 @@
 'use client'
 
-let globalAudioCtx: AudioContext | null = null
+let audioCtx: AudioContext | null = null;
 
-export function initAudio() {
-  if (typeof window === 'undefined') return
-  if (!globalAudioCtx) {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
-    globalAudioCtx = new AudioCtx()
+function getContext() {
+  if (typeof window === 'undefined') return null;
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
-  if (globalAudioCtx.state === 'suspended') {
-    globalAudioCtx.resume()
-  }
+  return audioCtx;
 }
 
 export function playThud() {
-  if (!globalAudioCtx) return
+  const ctx = getContext();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+
   try {
-    const sub = globalAudioCtx.createOscillator()
-    const body = globalAudioCtx.createOscillator()
-    const gain = globalAudioCtx.createGain()
-    const filter = globalAudioCtx.createBiquadFilter()
+    const sub = ctx.createOscillator();
+    const subGain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
 
-    sub.type = 'sine'
-    sub.frequency.setValueAtTime(35, globalAudioCtx.currentTime)
-    sub.frequency.exponentialRampToValueAtTime(12, globalAudioCtx.currentTime + 0.5)
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(45, ctx.currentTime);
+    sub.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 0.8);
 
-    body.type = 'sine'
-    body.frequency.setValueAtTime(55, globalAudioCtx.currentTime)
-    body.frequency.exponentialRampToValueAtTime(18, globalAudioCtx.currentTime + 0.5)
+    filter.type = 'lowpass';
+    filter.frequency.value = 60;
 
-    filter.type = 'lowpass'
-    filter.frequency.value = 60
-    filter.Q.value = 2
+    subGain.gain.setValueAtTime(0.7, ctx.currentTime);
+    subGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
 
-    gain.gain.setValueAtTime(0.55, globalAudioCtx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.5)
+    sub.connect(filter);
+    filter.connect(subGain);
+    subGain.connect(ctx.destination);
 
-    sub.connect(filter)
-    body.connect(filter)
-    filter.connect(gain)
-    gain.connect(globalAudioCtx.destination)
-
-    sub.start()
-    body.start()
-    sub.stop(globalAudioCtx.currentTime + 0.5)
-    body.stop(globalAudioCtx.currentTime + 0.5)
-  } catch (_) {}
+    sub.start();
+    sub.stop(ctx.currentTime + 0.8);
+  } catch (e) {
+    console.error("Audio blocked:", e);
+  }
 }
 
 export function playLensClick() {
-  if (!globalAudioCtx) return
+  const ctx = getContext();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+
   try {
-    const osc = globalAudioCtx.createOscillator()
-    const gain = globalAudioCtx.createGain()
-    const filter = globalAudioCtx.createBiquadFilter()
-
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(3200, globalAudioCtx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(800, globalAudioCtx.currentTime + 0.04)
-
-    filter.type = 'highpass'
-    filter.frequency.value = 2000
-
-    gain.gain.setValueAtTime(0.12, globalAudioCtx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.04)
-
-    osc.connect(filter)
-    filter.connect(gain)
-    gain.connect(globalAudioCtx.destination)
-
-    osc.start()
-    osc.stop(globalAudioCtx.currentTime + 0.04)
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(3200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.05);
   } catch (_) {}
-}
-
-export function useSound() {
-  return { playThud, playLensClick, initAudio }
 }

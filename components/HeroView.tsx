@@ -1,173 +1,87 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import { playThud } from '@/hooks/useSound'
 
-// RESTORED: Timing Math Constants
-const MIST_DURATION_S = 3.7
-const MIST_PEAK_S = MIST_DURATION_S / 2
-
-const SCALAR_FADE_IN_DELAY_S = MIST_PEAK_S + 0.03
-const SCALAR_FADE_IN_DURATION_S = 1.0
-
-const ORDINANCE_FADE_IN_DELAY_S =
-  SCALAR_FADE_IN_DELAY_S + SCALAR_FADE_IN_DURATION_S + 0.7
-const ORDINANCE_FADE_IN_DURATION_S = 0.8
-
-// RESTORED: Missing dynamic R3F imports 
 const ClientCanvas = dynamic(() => import('./ClientCanvas'), { ssr: false })
 const CureSequenceShader = dynamic(() => import('./CureSequenceShader'), { ssr: false })
 
 type HeroViewProps = {
-  isCured: boolean
   onSelectCategory: (category: 'organic' | 'inorganic') => void
   onTransitionStart: () => void
 }
 
-export default function HeroView({
-  isCured, // Keep prop for fallback logic just in case
-  onSelectCategory,
-  onTransitionStart,
-}: HeroViewProps) {
-  
-  const scalarVariant = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        delay: SCALAR_FADE_IN_DELAY_S,
-        duration: SCALAR_FADE_IN_DURATION_S,
-        ease: 'easeInOut',
-      },
-    },
-  }
-
-  const ordinanceVariant = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        delay: ORDINANCE_FADE_IN_DELAY_S,
-        duration: ORDINANCE_FADE_IN_DURATION_S,
-        ease: 'easeOut',
-      },
-    },
-  }
-
-  const bifurcationVariant = {
-    hidden: { opacity: 0, y: 10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: 0, // Drops the EXACT millisecond the shader flash peak hits
-        duration: 0.8,
-        ease:[0.16, 1, 0.3, 1],
-      },
-    },
-  }
-
+export default function HeroView({ onSelectCategory, onTransitionStart }: HeroViewProps) {
   const [showButtons, setShowButtons] = useState(false)
 
-  const handleChoice = (category: 'organic' | 'inorganic') => {
-    onSelectCategory(category)
-    onTransitionStart()
-  }
+  // Synchronization Hook - Flash Peaks EXACTLY at 1600ms inside the Shader
+  useEffect(() => {
+    const flashTimer = setTimeout(() => {
+      setShowButtons(true);
+      // Automatically attempt the Sub Bass (browsers require click interactions beforehand sometimes)
+      playThud(); 
+    }, 1600);
+
+    // Initial click listener simply to satisfy audio strict-policy (if user clicks early, context unlocks)
+    const unlockAudio = () => playThud;
+    document.addEventListener("click", unlockAudio, { once: true });
+
+    return () => {
+      clearTimeout(flashTimer);
+      document.removeEventListener("click", unlockAudio);
+    };
+  },[]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden" style={{ backgroundColor: '#000502' }}>
-      {/* Layer 1 (Back): WebGL Mist - full screen radial overlay */}
-      <div
-        className="absolute inset-0 z-0 opacity-70"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 80% at 50% 50%, rgba(74,0,0,0.5) 0%, rgba(31,5,16,0.35) 40%, transparent 70%)',
-        }}
-        aria-hidden
-      />
+    <div className="relative w-full h-screen overflow-hidden bg-[#000502]">
+      {/* Background Radial Gradient Mist Backdrop */}
+      <div className="absolute inset-0 z-0 opacity-70 bg-[radial-gradient(ellipse_80%_80%_at_50%_50%,rgba(74,0,0,0.5)_0%,rgba(31,5,16,0.35)_40%,transparent_70%)]" aria-hidden />
       
-      {/* WebGL container: Z-Index 1 to sit behind UI text. Pointer events NONE so it doesnt block cursor. */}
-      <div className="absolute inset-0 z-[1]" style={{ transform: 'translateZ(0)', pointerEvents: 'none' }}>
-        <ClientCanvas
-          fallback={
-            <div className="absolute inset-0 bg-[#000502]" />
-          }
-        >
-           {/* Pure WebGL Layer - NO Heavy Text / Suspense boundaries rendering 600fps glass */}
-           <CureSequenceShader 
-             onFlashPeak={() => {
-                setShowButtons(true);
-                playThud();
-             }} 
-           />
+      {/* Decoupled WebGL Animation */}
+      <div className="absolute inset-0 z-[1] transform-gpu pointer-events-none">
+        <ClientCanvas fallback={<div className="absolute inset-0 bg-[#000502]" />}>
+           <CureSequenceShader />
         </ClientCanvas>
       </div>
 
-      {/* Layer 2 (Middle): Hero text - centered UI, must have pointer events AUTO */}
-      <section className="hero-text-block relative min-h-screen flex flex-col items-center justify-center overflow-hidden pointer-events-none" style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}>
-        <div className="relative text-center pointer-events-auto z-[60]" style={{ outline: 'none', background: 'transparent' }}>
-          <div className="space-y-4">
+      {/* Middle Z: Floating Data - Using generic variants without deep delays */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center pointer-events-none select-none z-[60]">
+        <div className="pointer-events-auto space-y-4 text-center mix-blend-screen bg-transparent" style={{ textShadow: '0 0 40px rgba(168, 0, 0, 0.4)' }}>
             <motion.h1
               data-thermal-hover="true"
-              className="hero-title text-7xl md:text-9xl font-light tracking-[0.4em] text-[#FCFBF8] outline-none select-none"
-              style={{
-                fontFamily: 'var(--font-archivo)',
-                fontWeight: 300,
-                background: 'transparent',
-                filter: 'drop-shadow(0 0 20px rgba(168, 0, 0, 0.3))',
-                textShadow: '0 0 40px rgba(168, 0, 0, 0.2)',
-                outline: 'none',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-              variants={scalarVariant}
-              initial="hidden"
-              animate="visible"
+              className="text-7xl md:text-9xl font-light tracking-[0.4em] text-[#FCFBF8]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: 1.0, delay: 0.5, ease: 'easeInOut' } }}
+              style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
             >
               Scalar
             </motion.h1>
             <motion.p
               data-thermal-hover="true"
               className="text-lg md:text-xl font-light tracking-[0.6em] lowercase text-[#FCFBF8]/80 mt-4"
-              style={{
-                fontFamily: 'var(--font-archivo)',
-                fontWeight: 300,
-                background: 'transparent',
-              }}
-              variants={ordinanceVariant}
-              initial="hidden"
-              animate="visible"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: 0.8, delay: 1.2, ease: 'easeOut' } }}
+              style={{ fontFamily: 'var(--font-archivo)' }}
             >
               ordinance of depth
             </motion.p>
-          </div>
         </div>
 
-        {/* Layer 3 (Front): UI Action Gate */}
+        {/* Foreground Drop: Words / Trigger */}
         <motion.div
-          className="flex items-center justify-center gap-12 md:gap-16 pointer-events-auto mt-16 z-[60]"
-          style={{ marginTop: '8vh', position: 'relative' }}
-          variants={bifurcationVariant}
-          initial="hidden"
-          animate={showButtons ? 'visible' : 'hidden'}
+          className="flex items-center justify-center gap-12 md:gap-16 mt-[8vh] pointer-events-auto"
+          initial={{ opacity: 0, y: 15 }}
+          animate={showButtons ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+          transition={{ duration: 0.6, ease:[0.16, 1, 0.3, 1] }}
         >
-          <button
-            type="button"
-            data-thermal-hover="true"
-            onClick={() => handleChoice('organic')}
-            className="font-light tracking-[0.4em] lowercase text-[#FCFBF8]/60 hover:text-white transition-colors p-4"
-            style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
-          >
+          <button type="button" data-thermal-hover onClick={() => { onSelectCategory('organic'); onTransitionStart(); }}
+            className="font-light tracking-[0.4em] lowercase text-white/60 hover:text-white p-4 transition-colors font-['var(--font-archivo)'] font-light">
             [organic]
           </button>
-          <button
-            type="button"
-            data-thermal-hover="true"
-            onClick={() => handleChoice('inorganic')}
-            className="font-light tracking-[0.4em] lowercase text-[#FCFBF8]/60 hover:text-white transition-colors p-4"
-            style={{ fontFamily: 'var(--font-archivo)', fontWeight: 300 }}
-          >
+          <button type="button" data-thermal-hover onClick={() => { onSelectCategory('inorganic'); onTransitionStart(); }}
+            className="font-light tracking-[0.4em] lowercase text-white/60 hover:text-white p-4 transition-colors font-['var(--font-archivo)'] font-light">
             [inorganic]
           </button>
         </motion.div>
